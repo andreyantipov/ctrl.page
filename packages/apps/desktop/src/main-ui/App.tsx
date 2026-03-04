@@ -1,83 +1,37 @@
-import { createSignal, onMount } from "solid-js";
-import { TabBar, AddressBar, type TabData } from "@ctrl/core.ui";
+import { onMount } from "solid-js";
+import { AddressBar } from "@ctrl/core.ui";
+import { SidebarTabsWidget, createSidebarTabs } from "@ctrl/feature.sidebar-tabs";
 
 type AppProps = {
   rpcPromise: Promise<any>;
 };
 
 export default function App(props: AppProps) {
-  const [tabs, setTabs] = createSignal<TabData[]>([]);
-  const [activeTabId, setActiveTabId] = createSignal<number | null>(null);
-  let rpc: any = null;
-
-  const activeUrl = () => {
-    const id = activeTabId();
-    const tab = tabs().find((t) => t.id === id);
-    return tab?.url ?? "";
-  };
+  const sidebar = createSidebarTabs();
 
   onMount(async () => {
-    rpc = await props.rpcPromise;
-    if (!rpc) return;
-
-    // Listen for tab state pushes from bun
-    rpc.addMessageListener(
-      "tabsChanged",
-      (state: { tabs: TabData[]; activeTabId: number | null }) => {
-        setTabs(state.tabs);
-        setActiveTabId(state.activeTabId);
-      },
-    );
-
-    // Load initial tab state
-    try {
-      const state = await rpc.request.getTabs({});
-      setTabs(state.tabs);
-      setActiveTabId(state.activeTabId);
-    } catch (e) {
-      console.error("Failed to load tabs:", e);
+    const rpc = await props.rpcPromise;
+    if (rpc) {
+      await sidebar.connect(rpc);
     }
   });
 
-  const handleTabClick = (id: number) => {
-    rpc?.request.switchTab({ id });
-  };
-
-  const handleTabClose = (id: number) => {
-    rpc?.request.closeTab({ id });
-  };
-
-  const handleNewTab = () => {
-    rpc?.request.createTab({ url: "about:blank" });
-  };
-
-  const handleNavigate = (url: string) => {
-    rpc?.request.navigateTab({ url });
-  };
-
-  const handleBack = () => {
-    // Content view navigation — not yet implemented
-  };
-
-  const handleForward = () => {
-    // Content view navigation — not yet implemented
-  };
-
   return (
-    <>
-      <TabBar
-        tabs={tabs()}
-        activeTabId={activeTabId()}
-        onTabClick={handleTabClick}
-        onTabClose={handleTabClose}
-        onNewTab={handleNewTab}
-      />
-      <AddressBar
-        url={activeUrl()}
-        onNavigate={handleNavigate}
-        onBack={handleBack}
-        onForward={handleForward}
-      />
-    </>
+    <div style={{ display: "flex", "flex-direction": "row", height: "100vh", width: "100vw" }}>
+      <SidebarTabsWidget controller={sidebar} />
+      <div style={{ display: "flex", "flex-direction": "column", flex: "1", "min-width": "0" }}>
+        {/* Titlebar drag region — matches macOS hiddenInset titlebar */}
+        {/* Titlebar drag region — height matches macOS hiddenInset inset */}
+        <div style={{ "-webkit-app-region": "drag", height: "8px", "flex-shrink": "0" }} />
+        <AddressBar
+          url={sidebar.activeUrl()}
+          onNavigate={(url) => sidebar.navigateTab(url)}
+          onBack={() => {}}
+          onForward={() => {}}
+        />
+        {/* Passthrough area — lets clicks reach the content BrowserView below */}
+        <div style={{ flex: "1", "pointer-events": "none" }} />
+      </div>
+    </div>
   );
 }

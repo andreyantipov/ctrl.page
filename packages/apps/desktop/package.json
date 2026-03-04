@@ -8,6 +8,7 @@
     "@ctrl/core.shared": "workspace:*",
     "@ctrl/core.ui": "workspace:*",
     "@ctrl/core.db": "workspace:*",
+    "@ctrl/feature.sidebar-tabs": "workspace:*",
     "@libsql/client": "latest",
     "effect": "latest",
     "@effect/platform": "latest",

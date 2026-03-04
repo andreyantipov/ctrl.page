@@ -6,12 +6,6 @@ import {
   type MainRPCSchema,
   GetAppInfoParams,
   GetAppInfoResponse,
-  GetTabsParams,
-  TabState,
-  CreateTabParams,
-  CloseTabParams,
-  SwitchTabParams,
-  NavigateTabParams,
 } from "@ctrl/core.shared";
 import type { AppLayer } from "./layers";
 import { makeRpcHandler } from "./rpc-handler";
@@ -36,7 +30,7 @@ export function createMainRPC(
         ),
 
         getTabs: (_raw: unknown) =>
-          tabManager.getTabState(),
+          tabManager.getSidebarState(),
 
         createTab: (raw: unknown) => {
           const params = raw as { url: string };
@@ -56,6 +50,21 @@ export function createMainRPC(
         navigateTab: (raw: unknown) => {
           const params = raw as { url: string };
           return tabManager.navigateTab(params.url);
+        },
+
+        setSidebarSection: (raw: unknown) => {
+          const params = raw as { id: string };
+          return tabManager.setSidebarSection(params.id);
+        },
+
+        setSidebarCollapsed: (raw: unknown) => {
+          const params = raw as { collapsed: boolean };
+          return tabManager.setSidebarCollapsed(params.collapsed);
+        },
+
+        setSidebarWidth: (raw: unknown) => {
+          const params = raw as { width: number };
+          return tabManager.setSidebarWidth(params.width);
         },
       },
       messages: {},

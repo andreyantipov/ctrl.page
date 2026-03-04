@@ -31,6 +31,31 @@ export const TabState = Schema.Struct({
 });
 export type TabState = typeof TabState.Type;
 
+// Sidebar state
+export const SidebarState = Schema.Struct({
+  activeSection: Schema.String,
+  collapsed: Schema.Boolean,
+  tabs: Schema.Array(TabInfo),
+  activeTabId: Schema.NullOr(Schema.Number),
+});
+export type SidebarState = typeof SidebarState.Type;
+
+// Sidebar requests
+export const SetSidebarSectionParams = Schema.Struct({
+  id: Schema.String,
+});
+export type SetSidebarSectionParams = typeof SetSidebarSectionParams.Type;
+
+export const SetSidebarCollapsedParams = Schema.Struct({
+  collapsed: Schema.Boolean,
+});
+export type SetSidebarCollapsedParams = typeof SetSidebarCollapsedParams.Type;
+
+export const SetSidebarWidthParams = Schema.Struct({
+  width: Schema.Number,
+});
+export type SetSidebarWidthParams = typeof SetSidebarWidthParams.Type;
+
 // Tab requests
 export const GetTabsParams = Schema.Struct({});
 export type GetTabsParams = typeof GetTabsParams.Type;
@@ -64,23 +89,35 @@ export type MainRPCSchema = {
       };
       getTabs: {
         params: GetTabsParams;
-        response: TabState;
+        response: SidebarState;
       };
       createTab: {
         params: CreateTabParams;
-        response: TabState;
+        response: SidebarState;
       };
       closeTab: {
         params: CloseTabParams;
-        response: TabState;
+        response: SidebarState;
       };
       switchTab: {
         params: SwitchTabParams;
-        response: TabState;
+        response: SidebarState;
       };
       navigateTab: {
         params: NavigateTabParams;
-        response: TabState;
+        response: SidebarState;
+      };
+      setSidebarSection: {
+        params: SetSidebarSectionParams;
+        response: SidebarState;
+      };
+      setSidebarCollapsed: {
+        params: SetSidebarCollapsedParams;
+        response: SidebarState;
+      };
+      setSidebarWidth: {
+        params: SetSidebarWidthParams;
+        response: SidebarState;
       };
     };
     messages: {};
@@ -89,7 +126,7 @@ export type MainRPCSchema = {
     requests: {};
     messages: {
       navigate: NavigateMessage;
-      tabsChanged: TabState;
+      sidebarStateChanged: SidebarState;
     };
   };
 };

@@ -78,7 +78,7 @@ const win = new BrowserWindow({
 });
 
 // Wire up tabManager with window context
-tabManager.setWindowId(win.id);
+tabManager.setWindow(win);
 tabManager.setRPC(win.webview.rpc);
 
 // Initialize tabs (loads from DB, creates content view)
