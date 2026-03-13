@@ -11,7 +11,7 @@
 		"dev:desktop": "turbo dev dev:watch-ui storybook --filter=@ctrl/desktop --filter=@ctrl/core.ui",
 		"build": "turbo build",
 		"check": "turbo check",
-		"lint": "biome check .",
+		"lint": "biome check . && bunx grit check .",
 		"lint:fix": "biome check --write .",
 		"fmt": "biome format --write .",
 		"test": "turbo test"
