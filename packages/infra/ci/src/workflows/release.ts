@@ -28,8 +28,9 @@ export async function release(source: Directory, githubToken: Secret): Promise<s
 				"set-url",
 				"origin",
 				"https://github.com/andreyantipov/ctrl.page.git",
-			]),
-		["bunx", "semantic-release"],
+			])
+			.withExec(["git", "checkout", "main"]),
+		["bunx", "semantic-release", "--branches", "main"],
 	).sync();
 
 	return "Release complete";
