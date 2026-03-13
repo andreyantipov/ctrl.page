@@ -1,5 +1,9 @@
 import { AddressBar } from "@ctrl/core.ui";
-import { createSidebarTabs, SidebarTabsWidget } from "@ctrl/feature.sidebar-tabs";
+import {
+	createSidebarTabs,
+	type SidebarTabsRPC,
+	SidebarTabsWidget,
+} from "@ctrl/feature.sidebar-tabs";
 import { onMount } from "solid-js";
 
 type AppProps = {
@@ -12,7 +16,7 @@ export default function App(props: AppProps) {
 	onMount(async () => {
 		const rpc = await props.rpcPromise;
 		if (rpc) {
-			await sidebar.connect(rpc);
+			await sidebar.connect(rpc as SidebarTabsRPC);
 		}
 	});
 

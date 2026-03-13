@@ -11,6 +11,7 @@
 		"@ctrl/core.ui": "workspace:*"
 	},
 	"scripts": {
+		"build": "tsgo --build",
 		"check": "tsgo --noEmit"
 	}
 }

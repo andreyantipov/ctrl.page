@@ -18,13 +18,13 @@ async function initElectrobun() {
 
 function waitForGlobal(name: string, timeout: number): Promise<void> {
 	return new Promise((resolve) => {
-		if ((window as Record<string, unknown>)[name]) {
+		if ((window as unknown as Record<string, unknown>)[name]) {
 			resolve();
 			return;
 		}
 		const start = Date.now();
 		const check = () => {
-			if ((window as Record<string, unknown>)[name] || Date.now() - start > timeout) {
+			if ((window as unknown as Record<string, unknown>)[name] || Date.now() - start > timeout) {
 				resolve();
 				return;
 			}
