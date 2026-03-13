@@ -90,11 +90,11 @@ jobs:
       - uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --ignore-scripts
 
       - name: Build desktop app
         working-directory: packages/apps/desktop
-        run: bun run prebundle && bunx electrobun build
+        run: bun run build
 
       - name: Package app
         run: |

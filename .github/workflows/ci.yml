@@ -53,9 +53,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
-        run: bun install
+        run: bun install --ignore-scripts
       - name: Build desktop app
         working-directory: packages/apps/desktop
-        run: bun run prebundle && bunx electrobun build
+        run: bun run build
       - name: Verify .app exists
         run: ls -la packages/apps/desktop/build/ctrl.page.app || ls -la packages/apps/desktop/dist/
