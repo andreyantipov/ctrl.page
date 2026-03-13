@@ -36,6 +36,7 @@
 		"@types/bun": "latest",
 		"@typescript/native-preview": "latest",
 		"drizzle-kit": "latest",
+		"lefthook": "^2.1.4",
 		"storybook": "^10.0.0",
 		"storybook-solidjs": "1.0.0-beta.6",
 		"storybook-solidjs-vite": "^10.0.0",
