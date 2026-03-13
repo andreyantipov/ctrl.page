@@ -22,4 +22,4 @@ if (!result.success) {
 }
 
 copyFileSync("../../libs/core.ui/build/styles.css", "build/main-ui/styles.css");
-console.log("View built successfully");
+console.info("View built successfully");

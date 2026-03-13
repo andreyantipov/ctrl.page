@@ -77,4 +77,4 @@ tabManager.setRPC(win.webview.rpc);
 // Initialize tabs (loads from DB, creates content view)
 await tabManager.init();
 
-console.log(`${APP_NAME} v${APP_VERSION} started`);
+console.info(`${APP_NAME} v${APP_VERSION} started`);

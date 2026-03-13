@@ -17,4 +17,4 @@ writeFileSync(
 );
 
 execSync("bun install --production", { cwd: outDir, stdio: "inherit" });
-console.log("Native deps prepared");
+console.info("Native deps prepared");
