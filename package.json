@@ -17,10 +17,30 @@
 		"test": "turbo test"
 	},
 	"packageManager": "bun@1.3.9",
+	"dependencies": {
+		"@effect/platform": "latest",
+		"@effect/platform-bun": "latest",
+		"@libsql/client": "latest",
+		"drizzle-orm": "latest",
+		"effect": "latest",
+		"electrobun": "latest",
+		"solid-js": "latest"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.7",
+		"@dschz/bun-plugin-solid": "^1.0.4",
 		"@getgrit/cli": "^0.1.0-alpha.1743007075",
+		"@pandacss/dev": "latest",
+		"@storybook/addon-essentials": "latest",
+		"@storybook/addon-links": "latest",
+		"@types/bun": "latest",
 		"@typescript/native-preview": "latest",
-		"turbo": "latest"
+		"drizzle-kit": "latest",
+		"storybook": "^10.0.0",
+		"storybook-solidjs": "1.0.0-beta.6",
+		"storybook-solidjs-vite": "^10.0.0",
+		"turbo": "latest",
+		"vite": "^6.0.0",
+		"vite-plugin-solid": "latest"
 	}
 }

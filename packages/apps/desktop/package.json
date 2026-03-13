@@ -4,20 +4,10 @@
 	"private": true,
 	"type": "module",
 	"dependencies": {
-		"electrobun": "latest",
 		"@ctrl/core.shared": "workspace:*",
 		"@ctrl/core.ui": "workspace:*",
 		"@ctrl/core.db": "workspace:*",
-		"@ctrl/feature.sidebar-tabs": "workspace:*",
-		"@libsql/client": "latest",
-		"effect": "latest",
-		"@effect/platform": "latest",
-		"@effect/platform-bun": "latest",
-		"solid-js": "latest"
-	},
-	"devDependencies": {
-		"@dschz/bun-plugin-solid": "^1.0.4",
-		"@types/bun": "latest"
+		"@ctrl/feature.sidebar-tabs": "workspace:*"
 	},
 	"scripts": {
 		"prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",

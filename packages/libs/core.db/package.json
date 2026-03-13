@@ -6,14 +6,6 @@
 	"exports": {
 		".": "./src/index.ts"
 	},
-	"dependencies": {
-		"@libsql/client": "latest",
-		"drizzle-orm": "latest",
-		"effect": "latest"
-	},
-	"devDependencies": {
-		"drizzle-kit": "latest"
-	},
 	"scripts": {
 		"build": "tsgo --build",
 		"check": "tsgo --noEmit",

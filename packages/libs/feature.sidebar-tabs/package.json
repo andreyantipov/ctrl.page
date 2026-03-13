@@ -8,8 +8,7 @@
 	},
 	"dependencies": {
 		"@ctrl/core.shared": "workspace:*",
-		"@ctrl/core.ui": "workspace:*",
-		"solid-js": "latest"
+		"@ctrl/core.ui": "workspace:*"
 	},
 	"scripts": {
 		"check": "tsgo --noEmit"
