@@ -1,6 +1,7 @@
-import { type Directory, func, object } from "@dagger.io/dagger";
+import { type Directory, func, object, type Secret } from "@dagger.io/dagger";
 import { build } from "./workflows/build";
 import { lint, typecheck } from "./workflows/lint";
+import { release } from "./workflows/release";
 
 @object()
 // biome-ignore lint/correctness/noUnusedVariables: Exported via Dagger @object() decorator
@@ -18,5 +19,10 @@ class Ci {
 	@func()
 	async build(source: Directory): Promise<string> {
 		return build(source);
+	}
+
+	@func()
+	async release(source: Directory, githubToken: Secret): Promise<string> {
+		return release(source, githubToken);
 	}
 }
