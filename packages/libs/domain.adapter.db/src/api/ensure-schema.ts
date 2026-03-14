@@ -9,14 +9,23 @@ import { Effect } from "effect";
 export const ensureSchema = Effect.gen(function* () {
 	const sql = yield* LibsqlClient.LibsqlClient;
 	yield* sql`
-		CREATE TABLE IF NOT EXISTS tabs (
+		CREATE TABLE IF NOT EXISTS sessions (
 			id TEXT PRIMARY KEY,
-			url TEXT NOT NULL,
-			title TEXT,
-			position INTEGER NOT NULL DEFAULT 0,
+			mode TEXT NOT NULL DEFAULT 'visual',
 			isActive INTEGER NOT NULL DEFAULT 0,
+			currentIndex INTEGER NOT NULL DEFAULT 0,
 			createdAt TEXT NOT NULL,
 			updatedAt TEXT NOT NULL
+		)
+	`;
+	yield* sql`
+		CREATE TABLE IF NOT EXISTS pages (
+			id TEXT PRIMARY KEY,
+			sessionId TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+			url TEXT NOT NULL,
+			title TEXT,
+			pageIndex INTEGER NOT NULL,
+			loadedAt TEXT NOT NULL
 		)
 	`;
 });
