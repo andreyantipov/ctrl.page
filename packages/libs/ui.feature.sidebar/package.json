@@ -14,6 +14,8 @@
 	"dependencies": {
 		"@ctrl/core.shared": "workspace:*",
 		"@ctrl/core.ui": "workspace:*",
-		"@ctrl/domain.service.browsing": "workspace:*"
+		"@ctrl/domain.feature.session": "workspace:*",
+		"@ctrl/domain.service.browsing": "workspace:*",
+		"@effect/rpc": "^0.73.2"
 	}
 }
