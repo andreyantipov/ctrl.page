@@ -705,10 +705,15 @@ export function SidebarFeature() {
   $filename <: within `domain.feature.`
 } => error("domain.feature.* depends on ports, not adapters")
 
-// domain.service.* cannot import domain.adapter.* (uses features, not adapters directly)
+// domain.service.* cannot import domain.adapter.*
 `import { $_ } from "@ctrl/domain.adapter.$_"` where {
   $filename <: within `domain.service.`
 } => error("domain.service.* composes features, not adapters — use DI via Layer")
+
+// domain.service.* cannot import other domain.service.* packages
+`import { $_ } from "@ctrl/domain.service.$_"` where {
+  $filename <: within `domain.service.`
+} => error("domain.service.* composes features, not other services — no service-to-service deps")
 
 // domain.adapter.* cannot import domain.feature.* or domain.service.*
 `import { $_ } from "@ctrl/domain.feature.$_"` where {
