@@ -71,14 +71,14 @@ Everything else is internal. GritQL enforces this (see Section 7).
 - `ui.*` imports `domain.service.*` only (never `domain.feature.*` or `domain.adapter.*`)
 - `packages/apps/*` imports `ui.page.*` only (never `ui.feature.*`)
 
-### 2.5 Core Package Dependencies
+### 2.4 Core Package Dependencies
 
 `core.shared` and `core.ui` are both foundation, with one dependency between them:
 
 - `core.shared` depends on: nothing (pure types, Effect tags)
 - `core.ui` depends on: `core.shared` (uses domain types in bridge utilities), `effect`, `solid-js`
 
-### 2.4 Composition Root
+### 2.5 Composition Root
 
 Wiring of adapters + features + services into a runnable Layer stack happens in the app, not in libs:
 
@@ -631,7 +631,7 @@ const makeFeatureService = <T, I, S>(
 ```typescript
 // core.ui/src/lib/use-domain-service.ts
 
-export function useDomainService<A extends { changes: Stream<any> }>(tag: Context.Tag<A>) {
+export function useDomainService<I, A extends { changes: Stream<any> }>(tag: Context.Tag<I, A>) {
   const service = useService(tag)
   const data = useStream(service.changes, undefined)
   return { data, actions: service }
