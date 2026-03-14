@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/andreyantipov/ctrl.page/compare/v0.2.1...v0.2.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* **ci:** build libs before desktop app in CI ([f795622](https://github.com/andreyantipov/ctrl.page/commit/f795622fdd187848dd1796bab6aff95bc8bd760e))
+
 ## [0.2.1](https://github.com/andreyantipov/ctrl.page/compare/v0.2.0...v0.2.1) (2026-03-13)
 
 
