@@ -27,6 +27,7 @@
 		"@effect/sql-drizzle": "latest",
 		"@effect/sql-libsql": "latest",
 		"@libsql/client": "latest",
+		"@opentelemetry/exporter-trace-otlp-http": "latest",
 		"@opentelemetry/sdk-trace-base": "latest",
 		"@opentelemetry/sdk-trace-node": "latest",
 		"@zag-js/solid": "^1.36.0",
