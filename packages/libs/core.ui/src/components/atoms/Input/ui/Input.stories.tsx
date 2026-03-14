@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs";
 import { Input } from "./Input";
 
 const meta = {
-	title: "Components/Input",
+	title: "Atoms/Input",
 	component: Input,
 	argTypes: {
 		size: {
