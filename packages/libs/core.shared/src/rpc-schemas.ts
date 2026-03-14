@@ -80,6 +80,10 @@ export const NavigateTabParams = Schema.Struct({
 });
 export type NavigateTabParams = typeof NavigateTabParams.Type;
 
+// Effect RPC tunnel message — opaque payload passed through Electrobun IPC
+export const EffectRpcMessage = Schema.Unknown;
+export type EffectRpcMessage = typeof EffectRpcMessage.Type;
+
 export type MainRPCSchema = {
 	bun: {
 		requests: {
@@ -87,46 +91,15 @@ export type MainRPCSchema = {
 				params: GetAppInfoParams;
 				response: GetAppInfoResponse;
 			};
-			getTabs: {
-				params: GetTabsParams;
-				response: SidebarState;
-			};
-			createTab: {
-				params: CreateTabParams;
-				response: SidebarState;
-			};
-			closeTab: {
-				params: CloseTabParams;
-				response: SidebarState;
-			};
-			switchTab: {
-				params: SwitchTabParams;
-				response: SidebarState;
-			};
-			navigateTab: {
-				params: NavigateTabParams;
-				response: SidebarState;
-			};
-			setSidebarSection: {
-				params: SetSidebarSectionParams;
-				response: SidebarState;
-			};
-			setSidebarCollapsed: {
-				params: SetSidebarCollapsedParams;
-				response: SidebarState;
-			};
-			setSidebarWidth: {
-				params: SetSidebarWidthParams;
-				response: SidebarState;
-			};
 		};
-		messages: Record<string, never>;
+		messages: {
+			"effect-rpc": EffectRpcMessage;
+		};
 	};
 	webview: {
 		requests: Record<string, never>;
 		messages: {
-			navigate: NavigateMessage;
-			sidebarStateChanged: SidebarState;
+			"effect-rpc": EffectRpcMessage;
 		};
 	};
 };
