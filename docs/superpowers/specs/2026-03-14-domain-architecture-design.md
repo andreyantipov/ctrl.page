@@ -71,12 +71,14 @@ Everything else is internal. GritQL enforces this (see Section 7).
 - `ui.*` imports `domain.service.*` only (never `domain.feature.*` or `domain.adapter.*`)
 - `packages/apps/*` imports `ui.page.*` only (never `ui.feature.*`)
 
-### 2.4 Core Package Dependencies
+### 2.4 Core Package Independence
 
-`core.shared` and `core.ui` are both foundation, with one dependency between them:
+`core.shared` and `core.ui` are fully independent — no dependency between them:
 
-- `core.shared` depends on: nothing (pure types, Effect tags)
-- `core.ui` depends on: `core.shared` (uses domain types in bridge utilities), `effect`, `solid-js`
+- `core.shared` depends on: `effect`, `@effect/schema` (external only)
+- `core.ui` depends on: `effect`, `solid-js`, `@pandacss/dev`, `@zag-js/solid` (external only)
+
+Bridge utilities in `core.ui` (`useStream`, `useService`, `useDomainService`) are generic — they use `Context.Tag` and `Stream` from `effect` directly, not from `core.shared`. No core package imports another core package.
 
 ### 2.5 Composition Root
 
@@ -1005,7 +1007,7 @@ With Claude Max (Opus 4.6, 1M context), steps 1–6 can be completed in a single
 | Package | Key dependencies |
 |---------|------------------|
 | `core.shared` | `effect`, `@effect/schema` |
-| `core.ui` | `solid-js`, `@pandacss/dev`, `@zag-js/solid` |
+| `core.ui` | `effect`, `solid-js`, `@pandacss/dev`, `@zag-js/solid` |
 | `domain.adapter.turso` | `@effect/sql-drizzle`, `@effect/sql-libsql`, `drizzle-orm` |
 | `domain.adapter.otel` | `@effect/opentelemetry`, `@opentelemetry/sdk-trace-node` |
 | `domain.adapter.rpc` | `@effect/rpc`, `@effect/rpc-http` |
