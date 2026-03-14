@@ -311,14 +311,16 @@ export const TabRepositoryLive = Layer.effect(TabRepository,
 
 Drizzle lives entirely inside `domain.adapter.db`. Nothing outside the adapter knows it exists.
 
-- **Schema definitions** — Drizzle `sqliteTable()` in `model/`
-- **Query execution** — `@effect/sql-drizzle` for Effect-native Drizzle
-- **Migrations** — `drizzle-kit generate` from schema changes
-- **Type mapping** — adapter maps Drizzle rows to domain types defined in `core.shared`
+- **Schema definitions** — Drizzle `sqliteTable()` in `model/`, one file per entity
+- **Query execution** — `@effect/sql-drizzle` wraps Drizzle queries in Effect (typed errors, spans, DI)
+- **Migrations** — `drizzle-kit generate` auto-generates from schema changes, `drizzle-kit migrate` applies them
+- **Type mapping** — domain types are manually defined in `core.shared` as `type` (not `interface`). Adapter validates Drizzle schema matches via `satisfies` at compile time
+- **drizzle.config.ts** — lives in the adapter package root, configures schema path + migration output
+- **Type safety** — Drizzle infers insert/select types from schema. All queries are fully typed. No raw SQL strings.
 
 ```typescript
 // core.shared/src/model/types.ts — CANONICAL domain types (manually defined)
-export interface Tab {
+export type Tab = {
   id: string
   url: string
   title: string | null
@@ -404,10 +406,21 @@ core.ui Sidebar             receives props, renders
 
 ### 5.4 Feature Service with PubSub
 
-Each `domain.feature.*` owns its PubSub. Reactivity is built into the service:
+Each `domain.feature.*` owns its PubSub. Reactivity is built into the service.
+
+String constants (span names, service identifiers) are defined in `lib/constants.ts` — never hardcoded inline:
 
 ```typescript
+// domain.feature.tab/src/lib/constants.ts
+export const SPANS = {
+  notify:  "TabFeature.notify",
+  getAll:  "TabFeature.getAll",
+  create:  "TabFeature.create",
+  remove:  "TabFeature.remove",
+} as const
+
 // domain.feature.tab/src/api/tab.service.ts
+import { SPANS } from "../lib/constants"
 
 const TabFeatureLive = Layer.effect(TabFeature,
   Effect.gen(function*() {
@@ -417,22 +430,22 @@ const TabFeatureLive = Layer.effect(TabFeature,
     const notify = () =>
       repo.getAll().pipe(
         Effect.flatMap((tabs) => PubSub.publish(pubsub, tabs)),
-        Effect.withSpan("TabFeature.notify")
+        Effect.withSpan(SPANS.notify)
       )
 
     return {
-      getAll: () => repo.getAll().pipe(Effect.withSpan("TabFeature.getAll")),
+      getAll: () => repo.getAll().pipe(Effect.withSpan(SPANS.getAll)),
 
       create: (url: string) =>
         repo.create(url).pipe(
           Effect.tap(() => notify()),
-          Effect.withSpan("TabFeature.create")
+          Effect.withSpan(SPANS.create)
         ),
 
       remove: (id: string) =>
         repo.remove(id).pipe(
           Effect.tap(() => notify()),
-          Effect.withSpan("TabFeature.remove")
+          Effect.withSpan(SPANS.remove)
         ),
 
       changes: Stream.fromPubSub(pubsub),
@@ -778,6 +791,33 @@ Packages within the same tier cannot import each other. Each package is independ
 // index.ts only re-exports — no logic
 // (enforced by code review convention, not easily GritQL-able)
 ```
+
+### 7.4 Type Consistency
+
+Use `type` everywhere. Never `interface`. This aligns with Effect.ts conventions and avoids mixing two declaration styles:
+
+```grit
+// no interface declarations — use type instead
+`interface $name { $_ }` where {
+  $filename <: within `packages/libs/`
+} => error("use 'type' instead of 'interface' — project convention for consistency")
+```
+
+### 7.5 No Hardcoded Strings
+
+String constants (span names, service identifiers, error codes) must be defined in `lib/constants.ts` within the package, never inline:
+
+```grit
+// no hardcoded strings in Effect.withSpan
+`Effect.withSpan($str)` where {
+  $str <: string_literal
+} => error("span names must come from lib/constants.ts — no hardcoded strings in withSpan")
+```
+
+**String constant conventions:**
+- **Package-local constants** — `lib/constants.ts` within the package (span names, error messages)
+- **Shared constants** — `core.shared/src/lib/constants.ts` only if reused across multiple packages (error codes, event names shared between domain and ui)
+- Constants are `as const` objects, grouped by concern (SPANS, ERRORS, EVENTS)
 
 ---
 
