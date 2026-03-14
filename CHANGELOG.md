@@ -1,3 +1,40 @@
+# [0.4.0](https://github.com/andreyantipov/ctrl.page/compare/v0.3.1...v0.4.0) (2026-03-14)
+
+
+### Bug Fixes
+
+* **core.ui:** address PR review — dedup constants, type safety, error handling, gitignore tsbuildinfo ([970b228](https://github.com/andreyantipov/ctrl.page/commit/970b228b43666cb1251413a35df5cf628505b1a0))
+* extract hardcoded strings to constants and add no-raw-sql GritQL rule ([240f5b1](https://github.com/andreyantipov/ctrl.page/commit/240f5b1304843122798f3d5d999dedc383b484c3))
+* pin dependency versions, update spec and dependency matrix per PR review ([4cd48e4](https://github.com/andreyantipov/ctrl.page/commit/4cd48e4e6e7b7ae738638fc51117c4097d07e210))
+* remove declare module, lint ignores, and add GritQL rules ([0a6266e](https://github.com/andreyantipov/ctrl.page/commit/0a6266eca650e715992d2777586cf37d8cc5a852))
+* **spec:** add GritQL rule preventing service-to-service imports ([faad32b](https://github.com/andreyantipov/ctrl.page/commit/faad32b310108e2ecdbc35ce69548f1bb1ac130b))
+* **spec:** add same-tier isolation GritQL rules ([c3da8bf](https://github.com/andreyantipov/ctrl.page/commit/c3da8bfbc29a119039bef2397703f8201bf29741))
+* **spec:** add type-only rule, no hardcoded strings, improve schema docs ([155904f](https://github.com/andreyantipov/ctrl.page/commit/155904f09fdd5f4d04dc155c57bad25048731f10))
+* **spec:** address review findings in domain architecture spec ([7a163be](https://github.com/andreyantipov/ctrl.page/commit/7a163bee883f373bcf9356e52f1db8f0b6d96c07))
+* **spec:** broaden problem statement to architectural scope ([08463cc](https://github.com/andreyantipov/ctrl.page/commit/08463ccefe1da75d7a2baa83dd5b2ad6be47b18d))
+* **spec:** eliminate all remaining hardcoded strings and smells ([05b621b](https://github.com/andreyantipov/ctrl.page/commit/05b621b26f5062949ef8803b1e554a371a8bfdd6))
+* **spec:** fix section numbering and Context.Tag generic params ([78c761b](https://github.com/andreyantipov/ctrl.page/commit/78c761bc6dce119eb0fa9e92c660a68c2bd36ab2))
+* **spec:** make core.shared and core.ui fully independent ([1df5b30](https://github.com/andreyantipov/ctrl.page/commit/1df5b30a039b0b47377f4f489daeaf837756a4d8))
+* **spec:** rename domain.adapter.turso to domain.adapter.db ([273da4c](https://github.com/andreyantipov/ctrl.page/commit/273da4c9dd59342dca9375dc3143a3180a6f1722))
+* **spec:** replace manual withSpan with automatic withTracing utility ([c7eaaf0](https://github.com/andreyantipov/ctrl.page/commit/c7eaaf0043abdb62b5c666e9042872bc4781aaaf))
+* **spec:** replace raw SQL string in DBSP example with typed repo method ([1e1bd97](https://github.com/andreyantipov/ctrl.page/commit/1e1bd97d7ac44bad019bce1ca4e10eb465d009b4))
+* **spec:** use shared spanName helper and constants in test assertions ([42a2498](https://github.com/andreyantipov/ctrl.page/commit/42a2498a8328ee6aa94d246eb18e0e227d3a1dd2))
+* type safety in makeRepository, non-fatal notify, null guard useStream, fix Electroview type ([7556cdc](https://github.com/andreyantipov/ctrl.page/commit/7556cdcf088cd8970a56f8b2db9aa9f9556223cd))
+* use generic type for Electroview.defineRPC, fix banned {} type ([80ccefc](https://github.com/andreyantipov/ctrl.page/commit/80ccefc2a18eb2d7073a89b850ec3bdd5a495553))
+
+
+### Features
+
+* **core.shared:** add ports, domain types, withTracing, and spanName utilities ([91cfaff](https://github.com/andreyantipov/ctrl.page/commit/91cfaffcf54a78916e791c17daddcb15a0d24d27))
+* **core.ui:** add Effect-SolidJS bridge utilities (useStream, useService, RuntimeProvider) ([d5df0f2](https://github.com/andreyantipov/ctrl.page/commit/d5df0f2fc98a2836c89f689c8c604242c2e02acc))
+* **desktop:** wire new hex architecture into desktop app composition root ([8148740](https://github.com/andreyantipov/ctrl.page/commit/8148740c47745d016666b5c9b747304c6ad858f8))
+* **domain.adapter.db:** implement Drizzle schema, makeRepository, and TabRepository ([114897b](https://github.com/andreyantipov/ctrl.page/commit/114897b199e6eec30df624bd67b6655e270061d4))
+* **domain.adapter.otel:** implement OTEL layers and test span utilities ([f0eab95](https://github.com/andreyantipov/ctrl.page/commit/f0eab9546638753625b24738b47483f8db1a5361))
+* **domain.feature.tab:** implement tab service with PubSub reactivity ([8ef8505](https://github.com/andreyantipov/ctrl.page/commit/8ef8505130a111fe75084c528532b94d27f76fb0))
+* **domain.service.browsing:** implement composed browsing service with trace assertions ([72be316](https://github.com/andreyantipov/ctrl.page/commit/72be31656bf721f13d7212ce85e32094f0f25762))
+* **ui.feature.sidebar:** implement sidebar feature with domain service binding ([f1c3ca6](https://github.com/andreyantipov/ctrl.page/commit/f1c3ca6423ed4743e0767bc8da18b53bade1b64a))
+* **ui.page.main:** implement main page composing sidebar feature ([77174c9](https://github.com/andreyantipov/ctrl.page/commit/77174c9809f11cbf6a285b0403edfbf4aeaa89f4))
+
 ## [0.3.1](https://github.com/andreyantipov/ctrl.page/compare/v0.3.0...v0.3.1) (2026-03-14)
 
 
