@@ -15,6 +15,7 @@
 		"@ctrl/core.shared": "workspace:*",
 		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",
+		"@effect/platform": "*",
 		"@effect/rpc": "*"
 	}
 }

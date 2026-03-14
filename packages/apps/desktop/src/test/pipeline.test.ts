@@ -1,7 +1,8 @@
-import { spanName, type Session } from "@ctrl/core.shared";
+import { type Session, spanName } from "@ctrl/core.shared";
 import { assertContainsSpan, TestSpanExporter } from "@ctrl/domain.adapter.otel";
 import { SESSION_FEATURE } from "@ctrl/domain.feature.session";
-import { BROWSING_SERVICE, BrowsingRpcs } from "@ctrl/domain.service.browsing";
+import { BROWSING_SERVICE, BrowsingRpcs, type BrowsingState } from "@ctrl/domain.service.browsing";
+import { Headers } from "@effect/platform";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { Chunk, Duration, Effect, Fiber, ManagedRuntime, Stream } from "effect";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
@@ -24,19 +25,24 @@ describe("Full pipeline", () => {
 
 				// Subscribe to session changes BEFORE mutation
 				const sessionChanges = yield* BrowsingRpcs.accessHandler("sessionChanges");
-				const stream = sessionChanges(undefined as any, {
-					headers: {} as any,
-				}) as Stream.Stream<{ readonly sessions: readonly Session[] }, any>;
+				const stream = (
+					sessionChanges as (
+						payload: undefined,
+						headers: typeof Headers.empty,
+					) => Stream.Stream<BrowsingState, never>
+				)(undefined, Headers.empty);
 
 				const fiber = yield* stream.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 
 				yield* Effect.sleep(Duration.millis(10));
 
 				const createSession = yield* BrowsingRpcs.accessHandler("createSession");
-				yield* createSession({ mode: "visual" }, { headers: {} as any }) as Effect.Effect<
-					Session,
-					any
-				>;
+				yield* (
+					createSession as (
+						payload: { mode: "visual" },
+						headers: typeof Headers.empty,
+					) => Effect.Effect<Session, unknown>
+				)({ mode: "visual" }, Headers.empty);
 
 				// Join fiber — verify stream delivered BrowsingState with 1 session
 				const collected = yield* Fiber.join(fiber);

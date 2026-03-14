@@ -1,19 +1,17 @@
-import {
-	type Session,
-	SessionRepository,
-	spanName,
-	type Page,
-} from "@ctrl/core.shared";
+import type { DatabaseError } from "@ctrl/core.shared";
+import { type Page, type Session, SessionRepository, spanName } from "@ctrl/core.shared";
 import {
 	assertContainsSpan,
 	TestSpanExporter,
 	TestSpanExporterLive,
 } from "@ctrl/domain.adapter.otel";
 import { SESSION_FEATURE, SessionFeatureLive } from "@ctrl/domain.feature.session";
+import { Headers } from "@effect/platform";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { Chunk, Duration, Effect, Fiber, Layer, ManagedRuntime, Stream } from "effect";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { BROWSING_SERVICE } from "../lib/constants";
+import type { BrowsingState } from "../model/browsing.events";
 import { BrowsingHandlersLive } from "./browsing.handlers";
 import { BrowsingRpcs } from "./browsing.rpc";
 
@@ -68,6 +66,8 @@ const runtime = ManagedRuntime.make(TestLayer);
 
 afterAll(() => runtime.dispose());
 
+type HandlerFn<P, R> = (payload: P, headers: typeof Headers.empty) => R;
+
 describe("BrowsingService traces", () => {
 	beforeEach(() => {
 		sessions = [];
@@ -81,10 +81,9 @@ describe("BrowsingService traces", () => {
 				exporter.reset();
 
 				const createSession = yield* BrowsingRpcs.accessHandler("createSession");
-				yield* createSession({ mode: "visual" }, { headers: {} as any }) as Effect.Effect<
-					Session,
-					any
-				>;
+				yield* (
+					createSession as HandlerFn<{ mode: "visual" }, Effect.Effect<Session, DatabaseError>>
+				)({ mode: "visual" }, Headers.empty);
 
 				yield* Effect.sleep(Duration.millis(10));
 
@@ -96,18 +95,12 @@ describe("BrowsingService traces", () => {
 				assertContainsSpan(spans, expectedBrowsingSpan);
 				assertContainsSpan(spans, expectedSessionSpan);
 
-				const browsingSpan = spans.find(
-					(s: ReadableSpan) => s.name === expectedBrowsingSpan,
-				);
-				const sessionSpan = spans.find(
-					(s: ReadableSpan) => s.name === expectedSessionSpan,
-				);
+				const browsingSpan = spans.find((s: ReadableSpan) => s.name === expectedBrowsingSpan);
+				const sessionSpan = spans.find((s: ReadableSpan) => s.name === expectedSessionSpan);
 
 				expect(browsingSpan).toBeDefined();
 				expect(sessionSpan).toBeDefined();
-				expect(sessionSpan?.parentSpanContext?.spanId).toBe(
-					browsingSpan?.spanContext().spanId,
-				);
+				expect(sessionSpan?.parentSpanContext?.spanId).toBe(browsingSpan?.spanContext().spanId);
 
 				for (const span of spans) {
 					expect(span.status.code).not.toBe(2);
@@ -123,10 +116,9 @@ describe("BrowsingService traces", () => {
 				exporter.reset();
 
 				const getSessions = yield* BrowsingRpcs.accessHandler("getSessions");
-				yield* getSessions(undefined as any, { headers: {} as any }) as Effect.Effect<
-					Session[],
-					any
-				>;
+				yield* (
+					getSessions as HandlerFn<undefined, Effect.Effect<readonly Session[], DatabaseError>>
+				)(undefined, Headers.empty);
 				yield* Effect.sleep(Duration.millis(10));
 
 				const spans = exporter.getFinishedSpans();
@@ -144,17 +136,16 @@ describe("BrowsingService traces", () => {
 				exporter.reset();
 
 				const createSession = yield* BrowsingRpcs.accessHandler("createSession");
-				yield* createSession({ mode: "visual" }, { headers: {} as any }) as Effect.Effect<
-					Session,
-					any
-				>;
+				yield* (
+					createSession as HandlerFn<{ mode: "visual" }, Effect.Effect<Session, DatabaseError>>
+				)({ mode: "visual" }, Headers.empty);
 				exporter.reset();
 
 				const removeSession = yield* BrowsingRpcs.accessHandler("removeSession");
-				yield* removeSession({ id: "1" }, { headers: {} as any }) as Effect.Effect<
-					void,
-					any
-				>;
+				yield* (removeSession as HandlerFn<{ id: string }, Effect.Effect<void, DatabaseError>>)(
+					{ id: "1" },
+					Headers.empty,
+				);
 				yield* Effect.sleep(Duration.millis(10));
 
 				const spans = exporter.getFinishedSpans();
@@ -169,19 +160,18 @@ describe("BrowsingService traces", () => {
 		const result = await runtime.runPromise(
 			Effect.gen(function* () {
 				const sessionChanges = yield* BrowsingRpcs.accessHandler("sessionChanges");
-				const stream = sessionChanges(undefined as any, {
-					headers: {} as any,
-				}) as Stream.Stream<{ readonly sessions: readonly Session[] }, any>;
+				const stream = (
+					sessionChanges as HandlerFn<undefined, Stream.Stream<BrowsingState, never>>
+				)(undefined, Headers.empty);
 
 				const fiber = yield* stream.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 
 				yield* Effect.sleep(Duration.millis(10));
 
 				const createSession = yield* BrowsingRpcs.accessHandler("createSession");
-				yield* createSession({ mode: "visual" }, { headers: {} as any }) as Effect.Effect<
-					Session,
-					any
-				>;
+				yield* (
+					createSession as HandlerFn<{ mode: "visual" }, Effect.Effect<Session, DatabaseError>>
+				)({ mode: "visual" }, Headers.empty);
 
 				const collected = yield* Fiber.join(fiber);
 				return Chunk.toArray(collected);
