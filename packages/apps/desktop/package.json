@@ -12,7 +12,7 @@
 		"@ctrl/domain.feature.tab": "workspace:*",
 		"@ctrl/domain.service.browsing": "workspace:*",
 		"@ctrl/feature.sidebar-tabs": "workspace:*",
-		"@ctrl/ui.page.main": "workspace:*",
+		"@ctrl/ui.pages": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {

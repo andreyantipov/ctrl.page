@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/ui.page.main",
+	"name": "@ctrl/ui.pages",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",

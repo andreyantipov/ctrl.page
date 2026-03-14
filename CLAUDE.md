@@ -39,7 +39,7 @@ A local Ollama instance is available via MCP tools (`ollama_chat`, `ollama_gener
 - No `Effect.withSpan()` — use `withTracing()` from `@ctrl/core.shared`
 - No hardcoded strings for span names or service identifiers
 - GritQL enforces all boundaries — run `bunx grit check .` before committing
-- Two public surfaces: `domain.service.*` (for UI) and `ui.page.*` (for apps)
+- Two public surfaces: `domain.service.*` (for UI) and `ui.pages` (for apps)
 
 ## Notes
 

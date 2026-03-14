@@ -7,7 +7,7 @@ import {
 import { onMount } from "solid-js";
 
 // TODO(hex-migration): Once domain.adapter.rpc is implemented, replace the legacy
-// RPC-based sidebar with RuntimeProvider + MainPage from @ctrl/ui.page.main.
+// RPC-based sidebar with RuntimeProvider + MainPage from @ctrl/ui.pages.
 // The new UI components (SidebarFeature, MainPage) require a ManagedRuntime with
 // BrowsingService in context, which will be provided via an RPC-backed Effect layer
 // in the webview process. Until then, the existing RPC approach is preserved.

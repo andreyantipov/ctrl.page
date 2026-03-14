@@ -33,9 +33,9 @@ The second level of `ui.*.*` encodes the presentation layer:
 | Tier | Package format | Role | Depends on |
 |------|---------------|------|------------|
 | feature | `ui.feature.<name>` | Wires a domain service to a component | `domain.service.*` + `core.ui` |
-| page | `ui.page.<name>` | Composed scene filling template slots | `ui.feature.*` + `core.ui` |
+| pages | `ui.pages` | Single package containing all page compositions | `ui.feature.*` + `core.ui` |
 
-Alphabetical `f → p` matches dependency direction within `ui`.
+Pages are thin compositions (~20 lines each) and don't need package isolation. All pages live in a single `ui.pages` package. Alphabetical `f → p` matches dependency direction within `ui`.
 
 ## Core Packages (always 2-level)
 
@@ -51,7 +51,7 @@ Alphabetical `f → p` matches dependency direction within `ui`.
 Only two tiers are importable from outside their own namespace:
 
 - **`domain.service.*`** — the public API of all business logic (imported by `ui.feature.*`)
-- **`ui.page.*`** — the public API of all UI (imported by `packages/apps/*`)
+- **`ui.pages`** — the public API of all UI (imported by `packages/apps/*`)
 
 Everything else is internal. GritQL enforces this — see `docs/architecture/dependency-matrix.md`.
 
@@ -65,6 +65,6 @@ Everything else is internal. GritQL enforces this — see `docs/architecture/dep
 Examples:
 - A new DB-backed repository for bookmarks → `domain.adapter.bookmark` → `@ctrl/domain.adapter.bookmark`
 - Atomic business logic for bookmarks → `domain.feature.bookmark` → `@ctrl/domain.feature.bookmark`
-- A new page composed from features → `ui.page.settings` → `@ctrl/ui.page.settings`
+- A new page composed from features → add it to `ui.pages` → `@ctrl/ui.pages`
 
 For deep details see `docs/superpowers/specs/2026-03-14-domain-architecture-design.md` (Sections 2–3).
