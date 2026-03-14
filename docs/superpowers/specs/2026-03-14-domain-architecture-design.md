@@ -8,9 +8,9 @@
 
 ## 1. Problem Statement
 
-The current `feature.sidebar-tabs` package is POC-level code that mixes concerns: SolidJS signals for state, direct RPC calls, UI rendering logic, and business rules all in one controller. There is no clear separation between headless business logic, transport, and presentation. Unit tests are missing. There is no telemetry. Reactivity is ad-hoc (manual `pushState()` calls over RPC).
+The current codebase lacks a principled architecture for delivering features. Business logic, transport, reactivity, and presentation are not clearly separated. There are no unit tests, no telemetry, and no enforceable dependency rules. As the project grows, this makes it increasingly difficult to add features safely, test them in isolation, or refactor without cascading changes.
 
-This spec defines a robust, hexagonal architecture for delivering features in ctrl.page — from database to UI — with clean boundaries, testable services, transport-agnostic reactivity, and development telemetry.
+This spec establishes the foundational architecture for ctrl.page — a hexagonal design with clean package boundaries, headless-testable services, transport-agnostic reactivity, and development telemetry. The goal is to create a structure where every new feature follows a clear, repeatable path from database to UI, with each layer independently testable and replaceable.
 
 ---
 
