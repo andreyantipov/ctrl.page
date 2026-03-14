@@ -408,19 +408,11 @@ core.ui Sidebar             receives props, renders
 
 Each `domain.feature.*` owns its PubSub. Reactivity is built into the service.
 
-String constants (span names, service identifiers) are defined in `lib/constants.ts` — never hardcoded inline:
+Tracing is applied automatically via `withTracing` — no manual span names, no string constants:
 
 ```typescript
-// domain.feature.tab/src/lib/constants.ts
-export const SPANS = {
-  notify:  "TabFeature.notify",
-  getAll:  "TabFeature.getAll",
-  create:  "TabFeature.create",
-  remove:  "TabFeature.remove",
-} as const
-
 // domain.feature.tab/src/api/tab.service.ts
-import { SPANS } from "../lib/constants"
+import { withTracing } from "@ctrl/core.shared"
 
 const TabFeatureLive = Layer.effect(TabFeature,
   Effect.gen(function*() {
@@ -429,27 +421,20 @@ const TabFeatureLive = Layer.effect(TabFeature,
 
     const notify = () =>
       repo.getAll().pipe(
-        Effect.flatMap((tabs) => PubSub.publish(pubsub, tabs)),
-        Effect.withSpan(SPANS.notify)
+        Effect.flatMap((tabs) => PubSub.publish(pubsub, tabs))
       )
 
-    return {
-      getAll: () => repo.getAll().pipe(Effect.withSpan(SPANS.getAll)),
+    return withTracing("TabFeature", {
+      getAll: () => repo.getAll(),
 
       create: (url: string) =>
-        repo.create(url).pipe(
-          Effect.tap(() => notify()),
-          Effect.withSpan(SPANS.create)
-        ),
+        repo.create(url).pipe(Effect.tap(() => notify())),
 
       remove: (id: string) =>
-        repo.remove(id).pipe(
-          Effect.tap(() => notify()),
-          Effect.withSpan(SPANS.remove)
-        ),
+        repo.remove(id).pipe(Effect.tap(() => notify())),
 
       changes: Stream.fromPubSub(pubsub),
-    }
+    })
   })
 )
 ```
@@ -466,18 +451,18 @@ const BrowsingServiceLive = Layer.effect(BrowsingService,
     const tabs = yield* TabFeature
     const history = yield* HistoryFeature
 
-    return {
+    return withTracing("BrowsingService", {
       createTab: (url: string) =>
         Effect.gen(function*() {
           yield* tabs.create(url)
           yield* history.record(url)
-        }).pipe(Effect.withSpan("BrowsingService.createTab")),
+        }),
 
       // combineLatest: emits when EITHER stream updates (not zip which waits for both)
       changes: Stream.combineLatest(tabs.changes, history.changes).pipe(
         Stream.map(([tabs, history]) => ({ tabs, history }))
       ),
-    }
+    })
   })
 )
 ```
@@ -576,25 +561,49 @@ Same `Stream<Tab[]>` interface. All consumers unchanged. The subscription uses t
 
 ## 6. Codegen Reduction — Factories
 
-Three factories + one hook eliminate ~70% of boilerplate:
+Three factories + one hook + one tracing utility eliminate ~70% of boilerplate:
 
-### 6.1 makeRepository — CRUD from Drizzle schema
+### 6.1 withTracing — Automatic instrumentation for any service
+
+Telemetry is a cross-cutting concern. Instead of manually adding `Effect.withSpan()` to every method, wrap the entire service once:
+
+```typescript
+// core.shared/src/lib/with-tracing.ts
+
+export const withTracing = <S extends Record<string, unknown>>(
+  serviceName: string,
+  service: S,
+): S =>
+  Object.fromEntries(
+    Object.entries(service).map(([method, fn]) =>
+      Effect.isEffect(fn) || typeof fn === "function"
+        ? [method, (...args: any[]) => (fn as Function)(...args).pipe(
+            Effect.withSpan(`${serviceName}.${method}`)
+          )]
+        : [method, fn]  // streams, constants pass through untouched
+    )
+  ) as S
+```
+
+Lives in `core.shared/src/lib/` — reusable across all packages. No manual span names. No string constants per package. Service name is defined once when wrapping.
+
+### 6.2 makeRepository — CRUD from Drizzle schema
 
 ```typescript
 // domain.adapter.db/src/lib/make-repository.ts
 
-export const makeRepository = <T extends SQLiteTable>(table: T) => (db: DrizzleClient) => ({
-  getAll: () => db.select().from(table).pipe(Effect.withSpan(`${table._.name}.getAll`)),
-  getById: (id: string) =>
-    db.select().from(table).where(eq(table.id, id)).pipe(Effect.withSpan(`${table._.name}.getById`)),
-  create: (values: typeof table.$inferInsert) =>
-    db.insert(table).values(values).pipe(Effect.withSpan(`${table._.name}.create`)),
-  update: (id: string, values: Partial<typeof table.$inferInsert>) =>
-    db.update(table).set(values).where(eq(table.id, id)).pipe(Effect.withSpan(`${table._.name}.update`)),
-  remove: (id: string) =>
-    db.delete(table).where(eq(table.id, id)).pipe(Effect.withSpan(`${table._.name}.remove`)),
-})
+export const makeRepository = <T extends SQLiteTable>(table: T) => (db: DrizzleClient) =>
+  withTracing(table._.name, {
+    getAll: () => db.select().from(table),
+    getById: (id: string) => db.select().from(table).where(eq(table.id, id)),
+    create: (values: typeof table.$inferInsert) => db.insert(table).values(values),
+    update: (id: string, values: Partial<typeof table.$inferInsert>) =>
+      db.update(table).set(values).where(eq(table.id, id)),
+    remove: (id: string) => db.delete(table).where(eq(table.id, id)),
+  })
 ```
+
+Tracing is applied automatically via `withTracing` using the Drizzle table name. No manual span strings.
 
 **Usage:** spread factory + add custom queries only:
 
@@ -606,7 +615,7 @@ export const tabRepository = (db) => ({
 })
 ```
 
-### 6.2 makeFeatureService — Service + PubSub from repository
+### 6.3 makeFeatureService — Service + PubSub from repository
 
 ```typescript
 // shared factory pattern (can live in core.shared or be inline)
@@ -621,22 +630,15 @@ const makeFeatureService = <T, I, S>(
     const pubsub = yield* PubSub.unbounded<T[]>()
 
     const notify = () => repo.getAll().pipe(
-      Effect.flatMap((items) => PubSub.publish(pubsub, items)),
-      Effect.withSpan(`${serviceName}.notify`)
+      Effect.flatMap((items) => PubSub.publish(pubsub, items))
     )
 
-    return {
-      getAll: () => repo.getAll().pipe(Effect.withSpan(`${serviceName}.getAll`)),
-      create: (input) => repo.create(input).pipe(
-        Effect.tap(() => notify()),
-        Effect.withSpan(`${serviceName}.create`)
-      ),
-      remove: (id) => repo.remove(id).pipe(
-        Effect.tap(() => notify()),
-        Effect.withSpan(`${serviceName}.remove`)
-      ),
+    return withTracing(serviceName, {
+      getAll: () => repo.getAll(),
+      create: (input) => repo.create(input).pipe(Effect.tap(() => notify())),
+      remove: (id) => repo.remove(id).pipe(Effect.tap(() => notify())),
       changes: Stream.fromPubSub(pubsub),
-    }
+    })
   })
 )
 ```
@@ -805,19 +807,20 @@ Use `type` everywhere. Never `interface`. This aligns with Effect.ts conventions
 
 ### 7.5 No Hardcoded Strings
 
-String constants (span names, service identifiers, error codes) must be defined in `lib/constants.ts` within the package, never inline:
+Telemetry span names are handled automatically by `withTracing` — never hardcoded. For other string constants (error codes, event names), use `lib/constants.ts`:
 
 ```grit
-// no hardcoded strings in Effect.withSpan
+// no manual Effect.withSpan calls — use withTracing instead
 `Effect.withSpan($str)` where {
-  $str <: string_literal
-} => error("span names must come from lib/constants.ts — no hardcoded strings in withSpan")
+  $filename <: within `packages/libs/`
+} => error("use withTracing() wrapper instead of manual Effect.withSpan — see Section 6.1")
 ```
 
 **String constant conventions:**
-- **Package-local constants** — `lib/constants.ts` within the package (span names, error messages)
-- **Shared constants** — `core.shared/src/lib/constants.ts` only if reused across multiple packages (error codes, event names shared between domain and ui)
-- Constants are `as const` objects, grouped by concern (SPANS, ERRORS, EVENTS)
+- **Span names** — handled by `withTracing(serviceName, service)` automatically. No manual strings.
+- **Package-local constants** — `lib/constants.ts` within the package (error messages, event names)
+- **Shared constants** — `core.shared/src/lib/constants.ts` only if reused across multiple packages
+- Constants are `as const` objects, grouped by concern (ERRORS, EVENTS)
 
 ---
 
