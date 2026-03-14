@@ -565,12 +565,12 @@ When Turso DBSP stabilizes, the swap is minimal:
 changes: Stream.fromPubSub(pubsub)
 create: (url) => repo.create(url).pipe(Effect.tap(() => notify()))
 
-// Future: Turso DBSP pushes changes
-changes: db.subscribe("SELECT * FROM tabs")  // replaces PubSub
-// create() drops notify() — DB subscription handles it
+// Future: Turso DBSP pushes changes via typed query subscription
+changes: repo.subscribe.getAll()  // replaces PubSub — uses same typed repository methods
+// create() drops notify() — DB subscription handles it automatically
 ```
 
-Same `Stream<Tab[]>` interface. All consumers unchanged.
+Same `Stream<Tab[]>` interface. All consumers unchanged. The subscription uses the same typed repository methods — no raw SQL strings.
 
 ---
 
