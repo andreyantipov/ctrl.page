@@ -8,3 +8,4 @@ styled-system
 /devenv.lock
 .DS_Store
 packages/infra/ci/sdk
+.worktrees
