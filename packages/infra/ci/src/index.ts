@@ -22,7 +22,7 @@ class Ci {
 	}
 
 	@func()
-	async release(source: Directory, githubToken: Secret): Promise<string> {
-		return release(source, githubToken);
+	async release(source: Directory, githubToken: Secret, repositoryUrl: string): Promise<string> {
+		return release(source, githubToken, repositoryUrl);
 	}
 }
