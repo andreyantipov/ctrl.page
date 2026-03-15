@@ -1,6 +1,7 @@
 import { createEffect, createSignal, type JSX, onCleanup, onMount, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { CommandCenter, type CommandCenterProps } from "../../../organisms/CommandCenter";
+import { Notifications, notify } from "../../../organisms/Notifications";
 import { Sidebar, type SidebarProps } from "../../../organisms/Sidebar";
 import { appShellTemplate } from "./appShellTemplate.style";
 
@@ -59,6 +60,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	// Listen for global Cmd+K from Bun process (via Electrobun menu accelerator)
 	function handleGlobalToggle() {
+		notify.info("Cmd+K received", "IPC event arrived from Bun process");
 		toggleCc();
 	}
 
@@ -116,6 +118,8 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 				onSelect={handleCcSelect}
 				onSubmitRaw={handleCcSubmitRaw}
 			/>
+
+			<Notifications placement="bottom-end" />
 		</div>
 	);
 }

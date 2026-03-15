@@ -11,8 +11,8 @@ packages/infra/ci/sdk
 .worktrees
 *.tsbuildinfo
 
-# tsgo build artifacts emitted into src/ (should go to dist/)
-packages/libs/*/src/**/*.d.ts
-packages/libs/*/src/**/*.d.ts.map
-packages/libs/*/src/**/*.js
-packages/libs/*/src/**/*.js.map
+# tsgo build artifacts emitted into src/
+**/*.d.ts.map
+**/src/**/*.d.ts
+**/src/**/*.js
+**/src/**/*.js.map

@@ -14,6 +14,11 @@ export {
 	type CommandCenterProps,
 } from "./components/organisms/CommandCenter";
 export {
+	Notifications,
+	type NotificationsProps,
+	notify,
+} from "./components/organisms/Notifications";
+export {
 	Sidebar,
 	type SidebarItem,
 	type SidebarProps,
