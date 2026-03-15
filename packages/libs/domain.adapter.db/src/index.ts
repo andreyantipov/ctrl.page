@@ -1,4 +1,6 @@
+export { BookmarkRepositoryLive } from "./api/bookmark.repository";
 export { ensureSchema } from "./api/ensure-schema";
+export { HistoryRepositoryLive } from "./api/history.repository";
 export { SessionRepositoryLive } from "./api/session.repository";
 export { makeDbClient } from "./lib/client";
 export { makeRepository } from "./lib/make-repository";
