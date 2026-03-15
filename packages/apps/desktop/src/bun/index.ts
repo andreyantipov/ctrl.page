@@ -38,7 +38,7 @@ ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 	if (action === "toggle-command-center") {
 		console.info("[bun] executing toggle in webview");
 		win.webview.executeJavascript(
-			'window.dispatchEvent(new CustomEvent("ctrl:toggle-command-center"))',
+			"if(window.__ctrlToggleCommandCenter) window.__ctrlToggleCommandCenter()",
 		);
 	}
 });
@@ -70,7 +70,8 @@ ApplicationMenu.setApplicationMenu([
 	{
 		label: "View",
 		submenu: [
-			{ label: "Command Center", action: "toggle-command-center", accelerator: "Cmd+/" },
+			{ label: "Command Center", action: "toggle-command-center", accelerator: "Cmd+K" },
+			{ label: "Command Center Alt", action: "toggle-command-center", accelerator: "Cmd+/" },
 			{ type: "separator" },
 			{ label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" },
 		],

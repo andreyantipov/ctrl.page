@@ -73,11 +73,14 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	}
 
 	onMount(() => {
+		// Register global function callable from Bun via executeJavascript
+		(window as unknown as Record<string, unknown>).__ctrlToggleCommandCenter = handleGlobalToggle;
 		window.addEventListener("ctrl:toggle-command-center", handleGlobalToggle);
 		document.addEventListener("keydown", handleKeyDown);
 	});
 
 	onCleanup(() => {
+		delete (window as unknown as Record<string, unknown>).__ctrlToggleCommandCenter;
 		window.removeEventListener("ctrl:toggle-command-center", handleGlobalToggle);
 		document.removeEventListener("keydown", handleKeyDown);
 	});
