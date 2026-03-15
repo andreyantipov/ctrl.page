@@ -10,6 +10,8 @@ type WebviewTagElement = HTMLElement & {
 	toggleHidden: (hidden?: boolean) => void;
 	togglePassthrough: (passthrough?: boolean) => void;
 	syncDimensions: (force?: boolean) => void;
+	addMaskSelector: (selector: string) => void;
+	removeMaskSelector: (selector: string) => void;
 	on: (event: string, handler: (event: CustomEvent) => void) => void;
 	off: (event: string, handler: (event: CustomEvent) => void) => void;
 };
@@ -122,15 +124,24 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	function setupWebview(el: HTMLElement) {
 		webviewRef = el as WebviewTagElement;
 		webviewRef.on("host-message", handleHostMessage);
+		// Register mask selector programmatically — SolidJS sets custom element
+		// props as JS properties, not HTML attributes. The Electrobun custom element
+		// reads masks via getAttribute() which misses property-only values.
+		// addMaskSelector() writes to the internal maskSelectors Set directly.
+		webviewRef.addMaskSelector("[data-command-center-overlay]");
 	}
 
-	// Hide the native webview surface while the CommandCenter overlay is open.
-	// The WKWebView composites above the DOM — toggleHidden removes it so the
-	// DOM overlay (backdrop + palette) renders visibly. Page returns on close.
+	// Force all webviews to re-sync mask rects when CommandCenter opens/closes.
+	// The palette DOM element appears/disappears — the native CAShapeLayer must
+	// be recalculated to cut a hole where the palette renders.
 	createEffect(() => {
-		if (webviewRef) {
-			webviewRef.toggleHidden(ccOpen());
-		}
+		const _open = ccOpen();
+		// Delay to ensure SolidJS <Show> has flushed the DOM update
+		requestAnimationFrame(() => {
+			document.querySelectorAll("electrobun-webview").forEach((el) => {
+				(el as WebviewTagElement).syncDimensions(true);
+			});
+		});
 	});
 
 	createEffect(() => {
