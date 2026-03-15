@@ -30,6 +30,7 @@ export type MainRPCSchema = {
 		requests: Record<string, never>;
 		messages: {
 			"effect-rpc": EffectRpcMessage;
+			"toggle-command-center": Record<string, never>;
 		};
 	};
 };

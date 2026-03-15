@@ -48,7 +48,11 @@ ApplicationMenu.setApplicationMenu([
 	},
 	{
 		label: "View",
-		submenu: [{ label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" }],
+		submenu: [
+			{ label: "Command Center", action: "toggle-command-center", accelerator: "Cmd+K" },
+			{ type: "separator" },
+			{ label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" },
+		],
 	},
 	{
 		label: "Window",
@@ -67,6 +71,14 @@ const win = new BrowserWindow({
 	titleBarStyle: "hiddenInset",
 	transparent: false,
 	rpc: mainRPC,
+});
+
+// Handle global menu actions (Cmd+K → toggle command center)
+ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
+	const action = (event as { action?: string })?.action;
+	if (action === "toggle-command-center") {
+		win.webview.rpc?.send["toggle-command-center"]({});
+	}
 });
 
 // Start the Effect RPC server over the Electrobun IPC tunnel.

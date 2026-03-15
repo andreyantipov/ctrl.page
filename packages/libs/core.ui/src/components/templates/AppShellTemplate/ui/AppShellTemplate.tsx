@@ -4,6 +4,13 @@ import { CommandCenter, type CommandCenterProps } from "../../../organisms/Comma
 import { Sidebar, type SidebarProps } from "../../../organisms/Sidebar";
 import { appShellTemplate } from "./appShellTemplate.style";
 
+type WebviewTagElement = HTMLElement & {
+	loadURL: (url: string) => void;
+	addMaskSelector: (selector: string) => void;
+	removeMaskSelector: (selector: string) => void;
+	toggleHidden: (hidden?: boolean) => void;
+};
+
 export type AppShellTemplateProps = {
 	sidebar: SidebarProps;
 	commandCenter: Omit<CommandCenterProps, "open" | "onClose">;
@@ -14,14 +21,25 @@ export type AppShellTemplateProps = {
 export function AppShellTemplate(props: AppShellTemplateProps) {
 	const $ = appShellTemplate;
 	const [ccOpen, setCcOpen] = createSignal(false);
-	let webviewRef: HTMLElement | undefined;
+	let webviewRef: WebviewTagElement | undefined;
 
 	function openCc() {
 		setCcOpen(true);
+		// Add mask so CommandCenter overlay receives clicks on top of the webview
+		webviewRef?.addMaskSelector("[data-command-center-overlay]");
 	}
 
 	function closeCc() {
 		setCcOpen(false);
+		webviewRef?.removeMaskSelector("[data-command-center-overlay]");
+	}
+
+	function toggleCc() {
+		if (ccOpen()) {
+			closeCc();
+		} else {
+			openCc();
+		}
 	}
 
 	function handleNewTab() {
@@ -39,29 +57,33 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		props.commandCenter.onSubmitRaw?.(query);
 	}
 
+	// Listen for global Cmd+K from Bun process (via Electrobun menu accelerator)
+	function handleGlobalToggle() {
+		toggleCc();
+	}
+
+	// Also handle Cmd+K from DOM (when webview tag doesn't have focus)
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.metaKey && e.key === "k") {
 			e.preventDefault();
-			if (ccOpen()) {
-				closeCc();
-			} else {
-				openCc();
-			}
+			toggleCc();
 		}
 	}
 
 	onMount(() => {
+		window.addEventListener("ctrl:toggle-command-center", handleGlobalToggle);
 		document.addEventListener("keydown", handleKeyDown);
 	});
 
 	onCleanup(() => {
+		window.removeEventListener("ctrl:toggle-command-center", handleGlobalToggle);
 		document.removeEventListener("keydown", handleKeyDown);
 	});
 
 	createEffect(() => {
 		const url = props.currentUrl;
 		if (webviewRef && url && url !== "about:blank") {
-			(webviewRef as unknown as { loadURL: (url: string) => void }).loadURL(url);
+			webviewRef.loadURL(url);
 		}
 	});
 
@@ -75,7 +97,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 						<Dynamic
 							component="electrobun-webview"
 							ref={(el: HTMLElement) => {
-								webviewRef = el;
+								webviewRef = el as WebviewTagElement;
 							}}
 							src={props.currentUrl}
 							sandbox=""
