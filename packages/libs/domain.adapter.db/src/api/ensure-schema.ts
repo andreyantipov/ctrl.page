@@ -1,12 +1,17 @@
+import { existsSync } from "node:fs";
 import { LibsqlClient } from "@effect/sql-libsql";
 import type { Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { Effect } from "effect";
 
-// Use URL.pathname directly — paths in this monorepo never contain spaces or special chars.
-// Avoids node:url import which requires @types/node in CI's tsgo compiler.
-const migrationsFolder = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
+// Resolve migrations folder relative to current module.
+// In dev (unbundled): import.meta.url is .../src/api/ensure-schema.ts → ../migrations works.
+// In prod (bundled by Electrobun): import.meta.url is .../bun/index.js → ./migrations works
+// because electrobun.config.ts copies migrations to bun/migrations/.
+const devPath = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
+const bundledPath = decodeURIComponent(new URL("./migrations", import.meta.url).pathname);
+const migrationsFolder = existsSync(devPath) ? devPath : bundledPath;
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.
