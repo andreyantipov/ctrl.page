@@ -1,5 +1,11 @@
 import type { DatabaseError } from "@ctrl/core.shared";
-import { DEFAULT_TAB_URL, type Page, type Session, SessionRepository, spanName } from "@ctrl/core.shared";
+import {
+	DEFAULT_TAB_URL,
+	type Page,
+	type Session,
+	SessionRepository,
+	spanName,
+} from "@ctrl/core.shared";
 import {
 	assertContainsSpan,
 	TestSpanExporter,

@@ -6,9 +6,7 @@ import { Effect } from "effect";
 
 // Use URL.pathname directly — paths in this monorepo never contain spaces or special chars.
 // Avoids node:url import which requires @types/node in CI's tsgo compiler.
-const migrationsFolder = decodeURIComponent(
-	new URL("../migrations", import.meta.url).pathname,
-);
+const migrationsFolder = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.
@@ -19,7 +17,11 @@ export const ensureSchema = Effect.gen(function* () {
 	const sql = yield* LibsqlClient.LibsqlClient;
 	// LibsqlClient exposes the underlying libsql Client as `.sdk` at runtime
 	// (added in make() but not reflected in the public interface type).
-	const libsqlClient = (sql as unknown as { sdk: Client }).sdk;
+	const libsqlClient = (sql as unknown as Record<string, unknown>).sdk as Client | undefined;
+	if (!libsqlClient)
+		throw new Error(
+			"LibsqlClient.sdk not found — @effect/sql-libsql internal API may have changed",
+		);
 	const db = drizzle(libsqlClient);
 	yield* Effect.tryPromise({
 		try: () =>
