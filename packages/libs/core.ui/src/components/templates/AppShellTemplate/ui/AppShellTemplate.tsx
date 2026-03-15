@@ -151,7 +151,6 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 							ref={setupWebview}
 							src={props.currentUrl}
 							preload={SHORTCUT_PRELOAD}
-							sandbox=""
 							style="width: 100%; height: 100%; display: block;"
 						/>
 					</Show>
