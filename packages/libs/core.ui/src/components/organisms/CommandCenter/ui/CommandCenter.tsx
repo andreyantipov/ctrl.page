@@ -100,8 +100,8 @@ export function CommandCenter(props: CommandCenterProps) {
 
 	return (
 		<Show when={props.open}>
-			<div class={$().overlay} data-command-center-overlay="">
-				<div class={$().palette} role="dialog">
+			<div class={$().overlay}>
+				<div class={$().palette} role="dialog" data-command-center-overlay="">
 					<div class={$().searchBar}>
 						<span class={$().searchIcon}>&#8981;</span>
 						<input
