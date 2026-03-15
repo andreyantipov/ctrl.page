@@ -30,8 +30,18 @@ Pattern: create a `MockRepo` Layer → compose with the feature Layer → run th
 ```typescript
 const MockRepo = Layer.succeed(SessionRepository, {
   getAll: () => Effect.succeed([mockSession]),
-  create: (url) => Effect.succeed({ id: "1", url, mode: "visual", history: [], historyIndex: 0 }),
+  getById: (id) => Effect.succeed(mockSession),
+  create: (mode) => Effect.succeed({
+    id: "1", mode, pages: [{ url: DEFAULT_TAB_URL, title: null, loadedAt: new Date().toISOString() }],
+    currentIndex: 0, isActive: false,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+  }),
   remove: (id) => Effect.succeed(void 0),
+  setActive: (id) => Effect.succeed(void 0),
+  updateCurrentIndex: (id, index) => Effect.succeed(void 0),
+  addPage: (sessionId, url, atIndex) => Effect.succeed({ url, title: null, loadedAt: new Date().toISOString() }),
+  removePagesAfterIndex: (sessionId, index) => Effect.succeed(void 0),
+  updatePageTitle: (sessionId, pageIndex, title) => Effect.succeed(void 0),
 })
 
 const TestLayer = SessionFeatureLive.pipe(Layer.provide(MockRepo))

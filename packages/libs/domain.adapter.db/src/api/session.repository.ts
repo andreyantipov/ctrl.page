@@ -1,5 +1,6 @@
 import {
 	DatabaseError,
+	DEFAULT_TAB_URL,
 	type Page,
 	type Session,
 	SessionRepository,
@@ -74,7 +75,20 @@ export const SessionRepositoryLive = Layer.effect(
 						updatedAt: timestamp,
 					};
 					yield* db.insert(sessionsTable).values(values);
-					return { ...values, pages: [] } as Session;
+					// Always create an initial page so currentIndex: 0 is valid
+					const initialPage = {
+						id: genId(),
+						sessionId: id,
+						url: DEFAULT_TAB_URL,
+						title: null,
+						pageIndex: 0,
+						loadedAt: timestamp,
+					};
+					yield* db.insert(pagesTable).values(initialPage);
+					return {
+						...values,
+						pages: [{ url: DEFAULT_TAB_URL, title: null, loadedAt: timestamp } as Page],
+					} as Session;
 				}).pipe(
 					Effect.catchAll((cause) =>
 						Effect.fail(new DatabaseError({ message: "Failed to create session", cause })),

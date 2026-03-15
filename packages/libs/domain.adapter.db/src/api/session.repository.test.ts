@@ -1,4 +1,4 @@
-import { SessionRepository } from "@ctrl/core.shared";
+import { DEFAULT_TAB_URL, SessionRepository } from "@ctrl/core.shared";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";
@@ -38,7 +38,7 @@ describe("SessionRepository", () => {
 		expect(result).toEqual([]);
 	});
 
-	it("create session → getAll returns it with empty pages", async () => {
+	it("create session → getAll returns it with initial page", async () => {
 		const result = await runTest(
 			Effect.gen(function* () {
 				const repo = yield* SessionRepository;
@@ -47,34 +47,37 @@ describe("SessionRepository", () => {
 				expect(session.mode).toBe("visual");
 				expect(session.isActive).toBe(false);
 				expect(session.currentIndex).toBe(0);
-				expect(session.pages).toEqual([]);
+				expect(session.pages).toHaveLength(1);
+				expect(session.pages[0].url).toBe(DEFAULT_TAB_URL);
 
 				const all = yield* repo.getAll();
 				expect(all).toHaveLength(1);
-				expect(all[0].pages).toEqual([]);
+				expect(all[0].pages).toHaveLength(1);
+				expect(all[0].pages[0].url).toBe(DEFAULT_TAB_URL);
 				return all[0];
 			}),
 		);
 		expect(result.mode).toBe("visual");
 	});
 
-	it("addPage → getAll returns session with page", async () => {
+	it("addPage → getAll returns session with initial + added page", async () => {
 		const result = await runTest(
 			Effect.gen(function* () {
 				const repo = yield* SessionRepository;
 				const session = yield* repo.create("visual");
-				const page = yield* repo.addPage(session.id, "https://example.com", 0);
+				const page = yield* repo.addPage(session.id, "https://example.com", 1);
 				expect(page.url).toBe("https://example.com");
 				expect(page.title).toBeNull();
 				expect(page.loadedAt).toBeDefined();
 
 				const all = yield* repo.getAll();
-				expect(all[0].pages).toHaveLength(1);
-				expect(all[0].pages[0].url).toBe("https://example.com");
+				expect(all[0].pages).toHaveLength(2);
+				expect(all[0].pages[0].url).toBe(DEFAULT_TAB_URL);
+				expect(all[0].pages[1].url).toBe("https://example.com");
 				return all[0];
 			}),
 		);
-		expect(result.pages).toHaveLength(1);
+		expect(result.pages).toHaveLength(2);
 	});
 
 	it("addPage multiple → pages ordered by pageIndex", async () => {
@@ -82,20 +85,21 @@ describe("SessionRepository", () => {
 			Effect.gen(function* () {
 				const repo = yield* SessionRepository;
 				const session = yield* repo.create("visual");
-				yield* repo.addPage(session.id, "https://first.com", 0);
-				yield* repo.addPage(session.id, "https://second.com", 1);
-				yield* repo.addPage(session.id, "https://third.com", 2);
+				yield* repo.addPage(session.id, "https://first.com", 1);
+				yield* repo.addPage(session.id, "https://second.com", 2);
+				yield* repo.addPage(session.id, "https://third.com", 3);
 
 				const all = yield* repo.getAll();
 				const pages = all[0].pages;
-				expect(pages).toHaveLength(3);
-				expect(pages[0].url).toBe("https://first.com");
-				expect(pages[1].url).toBe("https://second.com");
-				expect(pages[2].url).toBe("https://third.com");
+				expect(pages).toHaveLength(4);
+				expect(pages[0].url).toBe(DEFAULT_TAB_URL);
+				expect(pages[1].url).toBe("https://first.com");
+				expect(pages[2].url).toBe("https://second.com");
+				expect(pages[3].url).toBe("https://third.com");
 				return pages;
 			}),
 		);
-		expect(result).toHaveLength(3);
+		expect(result).toHaveLength(4);
 	});
 
 	it("removePagesAfterIndex → truncates forward history", async () => {
@@ -103,20 +107,21 @@ describe("SessionRepository", () => {
 			Effect.gen(function* () {
 				const repo = yield* SessionRepository;
 				const session = yield* repo.create("visual");
-				yield* repo.addPage(session.id, "https://first.com", 0);
-				yield* repo.addPage(session.id, "https://second.com", 1);
-				yield* repo.addPage(session.id, "https://third.com", 2);
+				yield* repo.addPage(session.id, "https://first.com", 1);
+				yield* repo.addPage(session.id, "https://second.com", 2);
+				yield* repo.addPage(session.id, "https://third.com", 3);
 
-				yield* repo.removePagesAfterIndex(session.id, 0);
+				yield* repo.removePagesAfterIndex(session.id, 1);
 
 				const all = yield* repo.getAll();
 				const pages = all[0].pages;
-				expect(pages).toHaveLength(1);
-				expect(pages[0].url).toBe("https://first.com");
+				expect(pages).toHaveLength(2);
+				expect(pages[0].url).toBe(DEFAULT_TAB_URL);
+				expect(pages[1].url).toBe("https://first.com");
 				return pages;
 			}),
 		);
-		expect(result).toHaveLength(1);
+		expect(result).toHaveLength(2);
 	});
 
 	it("updateCurrentIndex → changes index", async () => {
@@ -141,16 +146,16 @@ describe("SessionRepository", () => {
 			Effect.gen(function* () {
 				const repo = yield* SessionRepository;
 				const session = yield* repo.create("visual");
-				yield* repo.addPage(session.id, "https://example.com", 0);
+				yield* repo.addPage(session.id, "https://example.com", 1);
 
-				yield* repo.updatePageTitle(session.id, 0, "Example Page");
+				yield* repo.updatePageTitle(session.id, 1, "Example Page");
 
 				const all = yield* repo.getAll();
-				expect(all[0].pages[0].title).toBe("Example Page");
+				expect(all[0].pages[1].title).toBe("Example Page");
 				return all[0];
 			}),
 		);
-		expect(result.pages[0].title).toBe("Example Page");
+		expect(result.pages[1].title).toBe("Example Page");
 	});
 
 	it("remove session → cascade deletes pages", async () => {
@@ -158,8 +163,8 @@ describe("SessionRepository", () => {
 			Effect.gen(function* () {
 				const repo = yield* SessionRepository;
 				const session = yield* repo.create("visual");
-				yield* repo.addPage(session.id, "https://example.com", 0);
-				yield* repo.addPage(session.id, "https://other.com", 1);
+				yield* repo.addPage(session.id, "https://example.com", 1);
+				yield* repo.addPage(session.id, "https://other.com", 2);
 
 				yield* repo.remove(session.id);
 
@@ -202,13 +207,14 @@ describe("SessionRepository", () => {
 				const repo = yield* SessionRepository;
 				const s1 = yield* repo.create("visual");
 				yield* repo.create("visual");
-				yield* repo.addPage(s1.id, "https://example.com", 0);
+				yield* repo.addPage(s1.id, "https://example.com", 1);
 
 				const found = yield* repo.getById(s1.id);
 				expect(found).toBeDefined();
 				expect(found?.id).toBe(s1.id);
-				expect(found?.pages).toHaveLength(1);
-				expect(found?.pages[0].url).toBe("https://example.com");
+				expect(found?.pages).toHaveLength(2);
+				expect(found?.pages[0].url).toBe(DEFAULT_TAB_URL);
+				expect(found?.pages[1].url).toBe("https://example.com");
 
 				const notFound = yield* repo.getById("nonexistent");
 				expect(notFound).toBeUndefined();
@@ -216,6 +222,6 @@ describe("SessionRepository", () => {
 				return found;
 			}),
 		);
-		expect(result?.pages).toHaveLength(1);
+		expect(result?.pages).toHaveLength(2);
 	});
 });

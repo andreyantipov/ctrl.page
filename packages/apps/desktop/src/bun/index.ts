@@ -58,6 +58,9 @@ ApplicationMenu.setApplicationMenu([
 ]);
 
 // Create ViewManager (BrowserView management only, no domain logic)
+// TODO: Wire ViewManager to BrowsingService.sessionChanges stream
+// to sync BrowserViews with sessions (create/destroy/navigate).
+// This requires the RPC server streaming to be fully operational.
 const viewManager = new ViewManager();
 
 // Create Electrobun RPC (legacy request/response + effect-rpc message channel)
