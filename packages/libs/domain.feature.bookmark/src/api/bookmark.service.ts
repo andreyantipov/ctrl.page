@@ -2,9 +2,9 @@ import {
 	type Bookmark,
 	BookmarkRepository,
 	type DatabaseError,
-	withTracing,
+	makeFeatureService,
 } from "@ctrl/core.shared";
-import { Context, Effect, Layer, PubSub, Stream } from "effect";
+import { Context, Effect, type Stream } from "effect";
 import { BOOKMARK_FEATURE } from "../lib/constants";
 
 export class BookmarkFeature extends Context.Tag(BOOKMARK_FEATURE)<
@@ -18,26 +18,14 @@ export class BookmarkFeature extends Context.Tag(BOOKMARK_FEATURE)<
 	}
 >() {}
 
-export const BookmarkFeatureLive = Layer.effect(
-	BookmarkFeature,
-	Effect.gen(function* () {
-		const repo = yield* BookmarkRepository;
-		const pubsub = yield* PubSub.unbounded<Bookmark[]>();
-
-		const notify = () =>
-			repo.getAll().pipe(Effect.flatMap((bookmarks) => PubSub.publish(pubsub, bookmarks)));
-
-		return withTracing(BOOKMARK_FEATURE, {
-			getAll: () => repo.getAll(),
-
-			create: (url: string, title: string | null) =>
-				repo.create(url, title).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
-
-			remove: (id: string) => repo.remove(id).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
-
-			isBookmarked: (url: string) => repo.findByUrl(url).pipe(Effect.map((b) => b !== undefined)),
-
-			changes: Stream.fromPubSub(pubsub),
-		});
+export const BookmarkFeatureLive = makeFeatureService({
+	tag: BookmarkFeature,
+	repoTag: BookmarkRepository,
+	name: BOOKMARK_FEATURE,
+	extend: (repo, notify) => ({
+		create: (url: string, title: string | null) =>
+			repo.create(url, title).pipe(Effect.tap(() => notify())),
+		remove: (id: string) => repo.remove(id).pipe(Effect.tap(() => notify())),
+		isBookmarked: (url: string) => repo.findByUrl(url).pipe(Effect.map((b) => b !== undefined)),
 	}),
-);
+});

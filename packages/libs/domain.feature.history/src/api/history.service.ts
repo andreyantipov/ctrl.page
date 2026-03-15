@@ -2,9 +2,9 @@ import {
 	type DatabaseError,
 	type HistoryEntry,
 	HistoryRepository,
-	withTracing,
+	makeFeatureService,
 } from "@ctrl/core.shared";
-import { Context, Effect, Layer, PubSub, Stream } from "effect";
+import { Context, Effect, type Stream } from "effect";
 import { HISTORY_FEATURE } from "../lib/constants";
 
 export class HistoryFeature extends Context.Tag(HISTORY_FEATURE)<
@@ -20,24 +20,13 @@ export class HistoryFeature extends Context.Tag(HISTORY_FEATURE)<
 	}
 >() {}
 
-export const HistoryFeatureLive = Layer.effect(
-	HistoryFeature,
-	Effect.gen(function* () {
-		const repo = yield* HistoryRepository;
-		const pubsub = yield* PubSub.unbounded<HistoryEntry[]>();
-
-		const notify = () =>
-			repo.getAll().pipe(Effect.flatMap((entries) => PubSub.publish(pubsub, entries)));
-
-		return withTracing(HISTORY_FEATURE, {
-			getAll: () => repo.getAll(),
-
-			record: (url: string, title: string | null) =>
-				repo.record(url, title).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
-
-			clear: () => repo.clear().pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
-
-			changes: Stream.fromPubSub(pubsub),
-		});
+export const HistoryFeatureLive = makeFeatureService({
+	tag: HistoryFeature,
+	repoTag: HistoryRepository,
+	name: HISTORY_FEATURE,
+	extend: (repo, notify) => ({
+		record: (url: string, title: string | null) =>
+			repo.record(url, title).pipe(Effect.tap(() => notify())),
+		clear: () => repo.clear().pipe(Effect.tap(() => notify())),
 	}),
-);
+});
