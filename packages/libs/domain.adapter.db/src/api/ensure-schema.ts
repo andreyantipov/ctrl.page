@@ -1,12 +1,10 @@
-import * as path from "node:path";
-import * as url from "node:url";
 import { LibsqlClient } from "@effect/sql-libsql";
 import type { Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { Effect } from "effect";
 
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+const migrationsFolder = new URL("../migrations", import.meta.url).pathname;
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.
@@ -22,7 +20,7 @@ export const ensureSchema = Effect.gen(function* () {
 	yield* Effect.tryPromise({
 		try: () =>
 			migrate(db, {
-				migrationsFolder: path.resolve(__dirname, "../migrations"),
+				migrationsFolder,
 			}),
 		catch: (cause) => new Error(`Migration failed: ${String(cause)}`),
 	});
