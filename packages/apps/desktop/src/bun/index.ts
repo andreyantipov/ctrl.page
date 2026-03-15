@@ -75,8 +75,8 @@ const win = new BrowserWindow({
 
 // Handle global menu actions (Cmd+K → toggle command center)
 ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
-	const action = (event as { action?: string })?.action;
-	if (action === "toggle-command-center") {
+	const data = (event as { data?: { action?: string } })?.data;
+	if (data?.action === "toggle-command-center") {
 		win.webview.rpc?.send["toggle-command-center"]({});
 	}
 });
