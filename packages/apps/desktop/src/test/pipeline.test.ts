@@ -23,10 +23,10 @@ describe("Full pipeline", () => {
 				const exporter = yield* TestSpanExporter;
 				exporter.reset();
 
-				// Subscribe to session changes BEFORE mutation
-				const sessionChanges = yield* BrowsingRpcs.accessHandler("sessionChanges");
+				// Subscribe to browsing changes BEFORE mutation
+				const browsingChanges = yield* BrowsingRpcs.accessHandler("browsingChanges");
 				const stream = (
-					sessionChanges as (
+					browsingChanges as (
 						payload: undefined,
 						headers: typeof Headers.empty,
 					) => Stream.Stream<BrowsingState, never>

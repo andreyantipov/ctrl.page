@@ -32,6 +32,8 @@ export const HistoryEntrySchema = Schema.Struct({
 
 export const BrowsingStateSchema = Schema.Struct({
 	sessions: Schema.Array(SessionSchema),
+	bookmarks: Schema.Array(BookmarkSchema),
+	history: Schema.Array(HistoryEntrySchema),
 });
 
 // Types derived from schemas — no manual definitions
