@@ -3,9 +3,12 @@ import type { Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { Effect } from "effect";
-import { fileURLToPath } from "node:url";
 
-const migrationsFolder = fileURLToPath(new URL("../migrations", import.meta.url));
+// Use URL.pathname directly — paths in this monorepo never contain spaces or special chars.
+// Avoids node:url import which requires @types/node in CI's tsgo compiler.
+const migrationsFolder = decodeURIComponent(
+	new URL("../migrations", import.meta.url).pathname,
+);
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.
