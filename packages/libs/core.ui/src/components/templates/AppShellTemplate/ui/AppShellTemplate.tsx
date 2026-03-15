@@ -28,11 +28,13 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	function handleCcSelect(id: string) {
 		setCcOpen(false);
+		props.onOverlayToggle?.(false);
 		props.commandCenter.onSelect?.(id);
 	}
 
 	function handleCcSubmitRaw(query: string) {
 		setCcOpen(false);
+		props.onOverlayToggle?.(false);
 		props.commandCenter.onSubmitRaw?.(query);
 	}
 
@@ -55,10 +57,15 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	return (
 		<div class={$().root}>
-			<Sidebar {...props.sidebar} onNewTab={handleNewTab} />
+			{/* Draggable titlebar region — Electrobun uses this CSS class for window dragging */}
+			<div class={`${$().titleBar} electrobun-webkit-app-region-drag`} />
 
-			<div class={$().content}>
-				<div class={$().page}>{props.children}</div>
+			<div class={$().body}>
+				<Sidebar {...props.sidebar} onNewTab={handleNewTab} />
+
+				<div class={$().content}>
+					<div class={$().page}>{props.children}</div>
+				</div>
 			</div>
 
 			<CommandCenter

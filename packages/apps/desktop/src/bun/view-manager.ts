@@ -1,7 +1,7 @@
 import { DEFAULT_TAB_URL } from "@ctrl/core.shared";
 import { BrowserView, type BrowserWindow } from "electrobun/bun";
 
-const CHROME_HEIGHT = 28; // macOS titlebar height (titleBarStyle: hiddenInset)
+const CHROME_HEIGHT = 32; // Matches titleBar slot height in AppShellTemplate (draggable region)
 const RAIL_WIDTH = 48; // Sidebar rail width when collapsed
 const DEFAULT_SIDEBAR_WIDTH = 240; // Sidebar component default width (includes rail)
 
