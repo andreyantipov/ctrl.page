@@ -49,16 +49,12 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	function openCc() {
 		if (ccOpen()) return;
-		// Enable passthrough so clicks reach the CommandCenter overlay behind the native view.
-		// The page stays visible — passthrough only affects input, not rendering.
-		webviewRef?.togglePassthrough(true);
 		setCcOpen(true);
 	}
 
 	function closeCc() {
 		if (!ccOpen()) return;
 		setCcOpen(false);
-		webviewRef?.togglePassthrough(false);
 	}
 
 	function toggleCc() {
@@ -142,6 +138,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 							ref={setupWebview}
 							src={props.currentUrl}
 							preload={SHORTCUT_PRELOAD}
+							masks="[data-command-center-overlay]"
 							style="width: 100%; height: 100%; display: block;"
 						/>
 					</Show>
