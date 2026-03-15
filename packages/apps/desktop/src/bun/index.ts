@@ -74,12 +74,19 @@ const win = new BrowserWindow({
 });
 
 // Handle global menu actions (Cmd+K → toggle command center)
+// Electrobun delivers menu click events with deserialized action data.
 ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
-	const data = (event as { data?: { action?: string } })?.data;
-	console.info("[menu-click] action:", data?.action, "full event data:", JSON.stringify(data));
-	if (data?.action === "toggle-command-center") {
-		console.info("[menu-click] sending toggle-command-center to webview");
-		win.webview.rpc?.send["toggle-command-center"]({});
+	// Try multiple ways to extract the action — Electrobun event structure may vary
+	const asAny = event as Record<string, unknown>;
+	const action =
+		(asAny?.data as Record<string, unknown>)?.action ??
+		asAny?.action ??
+		(typeof asAny?.detail === "string" ? asAny.detail : undefined);
+
+	if (action === "toggle-command-center") {
+		win.webview.executeJavascript(
+			'window.dispatchEvent(new CustomEvent("ctrl:toggle-command-center"))',
+		);
 	}
 });
 
