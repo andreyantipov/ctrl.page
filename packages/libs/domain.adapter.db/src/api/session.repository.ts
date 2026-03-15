@@ -1,4 +1,10 @@
-import { DatabaseError, type Page, type Session, SessionRepository, withTracing } from "@ctrl/core.shared";
+import {
+	DatabaseError,
+	type Page,
+	type Session,
+	SessionRepository,
+	withTracing,
+} from "@ctrl/core.shared";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { and, eq, gt } from "drizzle-orm";
 import { Effect, Layer } from "effect";
@@ -44,15 +50,9 @@ export const SessionRepositoryLive = Layer.effect(
 
 			getById: (id: string) =>
 				Effect.gen(function* () {
-					const sessions = yield* db
-						.select()
-						.from(sessionsTable)
-						.where(eq(sessionsTable.id, id));
+					const sessions = yield* db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
 					if (sessions.length === 0) return undefined;
-					const pages = yield* db
-						.select()
-						.from(pagesTable)
-						.where(eq(pagesTable.sessionId, id));
+					const pages = yield* db.select().from(pagesTable).where(eq(pagesTable.sessionId, id));
 					pages.sort((a, b) => a.pageIndex - b.pageIndex);
 					return assembleSession(sessions[0], pages);
 				}).pipe(
@@ -116,9 +116,7 @@ export const SessionRepositoryLive = Layer.effect(
 					.pipe(
 						Effect.asVoid,
 						Effect.catchAll((cause) =>
-							Effect.fail(
-								new DatabaseError({ message: "Failed to update current index", cause }),
-							),
+							Effect.fail(new DatabaseError({ message: "Failed to update current index", cause })),
 						),
 					),
 
@@ -159,15 +157,11 @@ export const SessionRepositoryLive = Layer.effect(
 				db
 					.update(pagesTable)
 					.set({ title })
-					.where(
-						and(eq(pagesTable.sessionId, sessionId), eq(pagesTable.pageIndex, pageIndex)),
-					)
+					.where(and(eq(pagesTable.sessionId, sessionId), eq(pagesTable.pageIndex, pageIndex)))
 					.pipe(
 						Effect.asVoid,
 						Effect.catchAll((cause) =>
-							Effect.fail(
-								new DatabaseError({ message: "Failed to update page title", cause }),
-							),
+							Effect.fail(new DatabaseError({ message: "Failed to update page title", cause })),
 						),
 					),
 		});

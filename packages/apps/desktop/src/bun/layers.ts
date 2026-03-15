@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { SessionRepositoryLive, makeDbClient } from "@ctrl/domain.adapter.db";
+import { makeDbClient, SessionRepositoryLive } from "@ctrl/domain.adapter.db";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { BrowsingHandlersLive } from "@ctrl/domain.service.browsing";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";

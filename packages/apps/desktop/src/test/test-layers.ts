@@ -1,7 +1,7 @@
 import { type Page, type Session, SessionRepository } from "@ctrl/core.shared";
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
-import { BrowsingHandlersLive, BrowsingRpcs } from "@ctrl/domain.service.browsing";
+import { BrowsingHandlersLive, type BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { Effect, Layer } from "effect";
 
 let nextId = 0;

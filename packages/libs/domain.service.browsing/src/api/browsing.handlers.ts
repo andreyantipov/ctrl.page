@@ -2,8 +2,8 @@ import { withTracing } from "@ctrl/core.shared";
 import { SessionFeature } from "@ctrl/domain.feature.session";
 import { Effect, Stream } from "effect";
 import { BROWSING_SERVICE } from "../lib/constants";
-import { BrowsingRpcs } from "./browsing.rpc";
 import type { BrowsingState } from "../model/browsing.events";
+import { BrowsingRpcs } from "./browsing.rpc";
 
 export const BrowsingHandlersLive = BrowsingRpcs.toLayer(
 	Effect.gen(function* () {
@@ -21,9 +21,7 @@ export const BrowsingHandlersLive = BrowsingRpcs.toLayer(
 			updateTitle: ({ id, title }: { readonly id: string; readonly title: string }) =>
 				sessions.updateTitle(id, title),
 			sessionChanges: () =>
-				sessions.changes.pipe(
-					Stream.map((sessions): BrowsingState => ({ sessions })),
-				),
+				sessions.changes.pipe(Stream.map((sessions): BrowsingState => ({ sessions }))),
 		});
 	}),
 );

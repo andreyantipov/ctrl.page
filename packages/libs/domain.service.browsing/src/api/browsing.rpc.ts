@@ -1,11 +1,11 @@
-import { Rpc, RpcGroup } from "@effect/rpc";
-import { Schema } from "effect";
 import {
 	BrowsingStateSchema,
 	DatabaseError,
 	SessionSchema,
 	ValidationError,
 } from "@ctrl/core.shared";
+import { Rpc, RpcGroup } from "@effect/rpc";
+import { Schema } from "effect";
 
 export class BrowsingRpcs extends RpcGroup.make(
 	Rpc.make("createSession", {

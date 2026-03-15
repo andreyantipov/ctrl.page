@@ -7,9 +7,7 @@ type MessageHandlers = {
 };
 
 export function defineRPC<T>(ev: {
-	defineRPC: (config: {
-		handlers: { requests: EmptyHandlers; messages: MessageHandlers };
-	}) => T;
+	defineRPC: (config: { handlers: { requests: EmptyHandlers; messages: MessageHandlers } }) => T;
 }): T {
 	return ev.defineRPC({
 		handlers: {

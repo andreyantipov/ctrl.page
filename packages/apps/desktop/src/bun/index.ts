@@ -3,12 +3,12 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
-import { ElectrobunServerProtocol, type ElectrobunRpcHandle } from "@ctrl/domain.adapter.rpc";
+import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
-import { RpcServer, RpcSerialization } from "@effect/rpc";
+import { RpcSerialization, RpcServer } from "@effect/rpc";
 import { Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
-import { DesktopLive, type AppLayer } from "./layers";
+import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
 import { ViewManager } from "./view-manager";
 
