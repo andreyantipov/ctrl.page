@@ -28,6 +28,11 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		props.commandCenter.onSelect?.(id);
 	}
 
+	function handleCcSubmitRaw(query: string) {
+		setCcOpen(false);
+		props.commandCenter.onSubmitRaw?.(query);
+	}
+
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.metaKey && e.key === "k") {
 			e.preventDefault();
@@ -57,6 +62,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 				initialQuery={props.currentUrl}
 				onClose={handleCcClose}
 				onSelect={handleCcSelect}
+				onSubmitRaw={handleCcSubmitRaw}
 			/>
 		</div>
 	);

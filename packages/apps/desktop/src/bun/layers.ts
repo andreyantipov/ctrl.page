@@ -37,6 +37,7 @@ const BrowsingHandlersLayer = BrowsingHandlersLive.pipe(
 // Compose: expose all layers needed by the app
 // - DbClientLive: for migrations (LibsqlClient)
 // - BrowsingHandlersLayer: Effect RPC handler implementations
-export const DesktopLive = Layer.mergeAll(DbClientLive, BrowsingHandlersLayer);
+// - SessionFeatureLayer: for ViewManager to subscribe to session changes
+export const DesktopLive = Layer.mergeAll(DbClientLive, BrowsingHandlersLayer, SessionFeatureLayer);
 
 export type AppLayer = Layer.Layer.Success<typeof DesktopLive>;

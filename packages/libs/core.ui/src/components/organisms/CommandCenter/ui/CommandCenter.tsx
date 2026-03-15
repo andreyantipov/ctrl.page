@@ -92,13 +92,23 @@ export function CommandCenter(props: CommandCenterProps) {
 
 	return (
 		<Show when={props.open}>
-			{/* biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: overlay dismisses on click, Escape handled by keydown listener */}
-			<div class={$().overlay} role="presentation" onClick={() => props.onClose?.()}>
-				{/* biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: dialog stops click propagation */}
-				<div class={$().palette} role="dialog" onClick={(e) => e.stopPropagation()}>
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses on click */}
+			<div
+				class={$().overlay}
+				role="presentation"
+				onClick={() => props.onClose?.()}
+				onKeyDown={(e) => e.key === "Escape" && props.onClose?.()}
+			>
+				<div
+					class={$().palette}
+					role="dialog"
+					onClick={(e) => e.stopPropagation()}
+					onKeyDown={(e) => e.stopPropagation()}
+				>
 					<div class={$().searchBar}>
 						<span class={$().searchIcon}>&#8981;</span>
 						<input
+							ref={(el) => setTimeout(() => el.focus(), 0)}
 							class={$().searchInput}
 							placeholder={props.placeholder ?? "Search or type a command..."}
 							value={query()}
@@ -106,7 +116,6 @@ export function CommandCenter(props: CommandCenterProps) {
 								setQuery(e.currentTarget.value);
 								setActiveIndex(0);
 							}}
-							autofocus
 						/>
 						<span class={$().shortcutBadge}>⌘K</span>
 					</div>

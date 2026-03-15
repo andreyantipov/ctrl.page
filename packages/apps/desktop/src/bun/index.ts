@@ -1,12 +1,13 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
+import { APP_NAME, APP_VERSION, currentUrl } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
+import { SessionFeature } from "@ctrl/domain.feature.session";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
-import { Layer, ManagedRuntime, Runtime } from "effect";
+import { Effect, Layer, ManagedRuntime, Runtime, Stream } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
@@ -104,5 +105,36 @@ const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
 // TODO: Dispose runtime and rpcServerRuntime on window close to release resources in dev mode.
 const rpcServerRuntime = ManagedRuntime.make(ServerLive);
 await rpcServerRuntime.runtime();
+
+// Wire ViewManager to browsing state — sync BrowserViews with active session
+let lastActiveUrl: string | undefined;
+
+// Use SessionFeature directly (available in the Bun process runtime context)
+Runtime.runFork(rt)(
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		yield* sessions.changes.pipe(
+			Stream.runForEach((allSessions) =>
+				Effect.sync(() => {
+					const active = allSessions.find((s) => s.isActive);
+					if (!active) {
+						viewManager.destroyContentView();
+						lastActiveUrl = undefined;
+						return;
+					}
+					const url = currentUrl(active);
+					if (url !== lastActiveUrl) {
+						if (!lastActiveUrl) {
+							viewManager.createContentView(url);
+						} else {
+							viewManager.navigateContentView(url);
+						}
+						lastActiveUrl = url;
+					}
+				}),
+			),
+		);
+	}),
+);
 
 console.info(`${APP_NAME} v${APP_VERSION} started`);
