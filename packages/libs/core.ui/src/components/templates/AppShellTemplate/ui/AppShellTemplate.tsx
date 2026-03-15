@@ -14,7 +14,11 @@ type WebviewTagElement = HTMLElement & {
 	off: (event: string, handler: (event: CustomEvent) => void) => void;
 };
 
-// Preload script injected into the webview tag to forward shortcuts to host
+type IpcBridgeHandle = {
+	subscribe: (handler: (cmd: { type: string }) => void) => () => void;
+};
+
+// Preload script: forwards Cmd+K, Cmd+/, Escape from webview tag to host
 const SHORTCUT_PRELOAD = `
 document.addEventListener('keydown', function(e) {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -42,10 +46,13 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	const $ = appShellTemplate;
 	const [ccOpen, setCcOpen] = createSignal(false);
 	let webviewRef: WebviewTagElement | undefined;
+	let ipcUnsub: (() => void) | undefined;
 
 	function openCc() {
 		if (ccOpen()) return;
-		// Screenshot the page, then hide native view so CommandCenter renders on top
+		// Capture screenshot of the page, then hide native view.
+		// The screenshot stays as a background image on the anchor element,
+		// so the page appears "still there" while CommandCenter overlays it.
 		if (webviewRef) {
 			webviewRef.syncScreenshot(() => {
 				webviewRef?.toggleHidden(true);
@@ -57,7 +64,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	function closeCc() {
 		if (!ccOpen()) return;
 		setCcOpen(false);
-		// Restore native view and clean up screenshot
+		// Restore the native webview and clean up the screenshot background
 		if (webviewRef) {
 			webviewRef.toggleHidden(false);
 			webviewRef.clearScreenImage();
@@ -65,11 +72,8 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	}
 
 	function toggleCc() {
-		if (ccOpen()) {
-			closeCc();
-		} else {
-			openCc();
-		}
+		if (ccOpen()) closeCc();
+		else openCc();
 	}
 
 	function handleNewTab() {
@@ -87,51 +91,43 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		props.commandCenter.onSubmitRaw?.(query);
 	}
 
-	// Handle shortcuts forwarded from webview tag via preload + host-message
+	// Shortcuts forwarded from webview tag via preload + __electrobunSendToHost
 	function handleHostMessage(event: CustomEvent) {
 		const msg = event.detail as { type?: string; key?: string } | undefined;
 		if (msg?.type === "shortcut") {
-			if (msg.key === "cmd+k" || msg.key === "cmd+/") {
-				toggleCc();
-			} else if (msg.key === "escape" && ccOpen()) {
-				closeCc();
-			}
+			if (msg.key === "cmd+k" || msg.key === "cmd+/") toggleCc();
+			else if (msg.key === "escape" && ccOpen()) closeCc();
 		}
 	}
 
-	// Handle Cmd+K from host webview DOM (when webview tag doesn't have focus)
+	// Cmd+K/Cmd+/ from host webview DOM (when sidebar or empty area has focus)
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.metaKey && (e.key === "k" || e.key === "/")) {
 			e.preventDefault();
 			toggleCc();
 		}
-		if (e.key === "Escape" && ccOpen()) {
-			closeCc();
-		}
+		if (e.key === "Escape" && ccOpen()) closeCc();
 	}
 
 	onMount(() => {
 		document.addEventListener("keydown", handleKeyDown);
 
-		// Subscribe to IPC bridge for commands from the Bun process
+		// Subscribe to IPC bridge for Bun process commands (Cmd+K via ApplicationMenu)
 		const bridge = (window as unknown as Record<string, unknown>).__ipcBridge as
-			| { subscribe: (handler: (cmd: { type: string }) => void) => () => void }
+			| IpcBridgeHandle
 			| undefined;
 		if (bridge) {
-			const unsub = bridge.subscribe((cmd) => {
-				if (cmd.type === "toggle-command-center") {
-					toggleCc();
-				}
+			ipcUnsub = bridge.subscribe((cmd) => {
+				if (cmd.type === "toggle-command-center") toggleCc();
 			});
-			onCleanup(unsub);
 		}
 	});
 
 	onCleanup(() => {
 		document.removeEventListener("keydown", handleKeyDown);
+		ipcUnsub?.();
 	});
 
-	// Wire webview ref: load URL on change + listen for host-message
 	function setupWebview(el: HTMLElement) {
 		webviewRef = el as WebviewTagElement;
 		webviewRef.on("host-message", handleHostMessage);
