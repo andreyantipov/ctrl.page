@@ -8,18 +8,8 @@ import { Effect } from "effect";
 // In dev (unbundled): import.meta.url is .../src/api/ensure-schema.ts → ../migrations works.
 // In prod (bundled by Electrobun): import.meta.url is .../bun/index.js → ./migrations works
 // because electrobun.config.ts copies migrations to bun/migrations/.
-function resolveMigrationsFolder(): string {
-	const devPath = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
-	const bundledPath = decodeURIComponent(new URL("./migrations", import.meta.url).pathname);
-	try {
-		const { existsSync } = require("node:fs") as { existsSync: (p: string) => boolean };
-		return existsSync(devPath) ? devPath : bundledPath;
-	} catch {
-		return devPath;
-	}
-}
-
-const migrationsFolder = resolveMigrationsFolder();
+const DEV_PATH = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
+const BUNDLED_PATH = decodeURIComponent(new URL("./migrations", import.meta.url).pathname);
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.
@@ -36,11 +26,11 @@ export const ensureSchema = Effect.gen(function* () {
 			"LibsqlClient.sdk not found — @effect/sql-libsql internal API may have changed",
 		);
 	const db = drizzle(libsqlClient);
+
+	// Try dev path first, fall back to bundled path if migration fails.
+	const tryMigrate = (folder: string) => migrate(db, { migrationsFolder: folder });
 	yield* Effect.tryPromise({
-		try: () =>
-			migrate(db, {
-				migrationsFolder,
-			}),
+		try: () => tryMigrate(DEV_PATH).catch(() => tryMigrate(BUNDLED_PATH)),
 		catch: (cause) => new Error(`Migration failed: ${String(cause)}`),
 	});
 });
