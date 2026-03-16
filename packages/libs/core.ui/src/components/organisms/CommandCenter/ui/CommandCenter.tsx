@@ -58,25 +58,25 @@ export function CommandCenter(props: CommandCenterProps) {
 		return grouped;
 	};
 
+	function handleEnter() {
+		const item = filteredItems()[activeIndex()];
+		if (item) props.onSelect?.(item.id);
+		else if (query().trim()) props.onSubmitRaw?.(query().trim());
+	}
+
 	// Keyboard handler — only active when open, registered/removed via createEffect
 	function handleKeyDown(e: KeyboardEvent) {
 		if (!props.open) return;
-
-		const items = filteredItems();
+		const len = filteredItems().length;
 		if (e.key === "ArrowDown") {
 			e.preventDefault();
-			setActiveIndex((i) => Math.min(i + 1, items.length - 1));
+			setActiveIndex((i) => Math.min(i + 1, len - 1));
 		} else if (e.key === "ArrowUp") {
 			e.preventDefault();
 			setActiveIndex((i) => Math.max(i - 1, 0));
 		} else if (e.key === "Enter") {
 			e.preventDefault();
-			const item = items[activeIndex()];
-			if (item) {
-				props.onSelect?.(item.id);
-			} else if (query().trim()) {
-				props.onSubmitRaw?.(query().trim());
-			}
+			handleEnter();
 		} else if (e.key === "Escape") {
 			e.preventDefault();
 			props.onClose?.();
