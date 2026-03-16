@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { LibsqlClient } from "@effect/sql-libsql";
 import type { Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
@@ -9,9 +8,18 @@ import { Effect } from "effect";
 // In dev (unbundled): import.meta.url is .../src/api/ensure-schema.ts → ../migrations works.
 // In prod (bundled by Electrobun): import.meta.url is .../bun/index.js → ./migrations works
 // because electrobun.config.ts copies migrations to bun/migrations/.
-const devPath = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
-const bundledPath = decodeURIComponent(new URL("./migrations", import.meta.url).pathname);
-const migrationsFolder = existsSync(devPath) ? devPath : bundledPath;
+function resolveMigrationsFolder(): string {
+	const devPath = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
+	const bundledPath = decodeURIComponent(new URL("./migrations", import.meta.url).pathname);
+	try {
+		const { existsSync } = require("node:fs") as { existsSync: (p: string) => boolean };
+		return existsSync(devPath) ? devPath : bundledPath;
+	} catch {
+		return devPath;
+	}
+}
+
+const migrationsFolder = resolveMigrationsFolder();
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.
